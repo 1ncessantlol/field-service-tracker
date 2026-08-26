@@ -1,0 +1,32 @@
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyByy-L7nyXUe0v2u-XfWUxb48AkZRPInFI",
+  authDomain: "field-service-report-ff092.firebaseapp.com",
+  projectId: "field-service-report-ff092",
+  storageBucket: "field-service-report-ff092.firebasestorage.app",
+  messagingSenderId: "268702275389",
+  appId: "1:268702275389:web:ff67ebbc117a28cd5e5754"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+// Initialize Firebase Authentication
+export const auth = getAuth(app);
+
+// Initialize Firestore
+export const db = getFirestore(app);
+
+// Enable offline persistence
+enableIndexedDbPersistence(db).catch((err) => {
+  if (err.code == 'failed-precondition') {
+    console.warn("Multiple tabs open, persistence can only be enabled in one tab at a time.");
+  } else if (err.code == 'unimplemented') {
+    console.warn("The current browser does not support all of the features required to enable persistence");
+  }
+});
+
+export default app;
