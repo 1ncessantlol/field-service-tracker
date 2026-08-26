@@ -74,19 +74,19 @@ export default function StudentsScreen() {
     setIsSubmitting(true);
     try {
       if (editStudentId) {
-        await updateDoc(doc(db, 'studies', editStudentId), {
+        updateDoc(doc(db, 'studies', editStudentId), {
           name: name.trim(),
           phone: phone.trim(),
           schedule: schedule.trim()
-        });
+        }).catch(err => console.error("Error updating student:", err));
       } else {
-        await addDoc(collection(db, 'studies'), {
+        addDoc(collection(db, 'studies'), {
           uid: user.uid,
           name: name.trim(),
           phone: phone.trim(),
           schedule: schedule.trim(),
           createdAt: serverTimestamp()
-        });
+        }).catch(err => console.error("Error adding student:", err));
       }
       resetForm();
     } catch (err) {
@@ -108,7 +108,7 @@ export default function StudentsScreen() {
   const handleDeleteStudent = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this student?")) {
       try {
-        await deleteDoc(doc(db, 'studies', id));
+        deleteDoc(doc(db, 'studies', id)).catch(err => console.error("Error deleting student:", err));
       } catch (err) {
         console.error("Error deleting student", err);
         alert("Failed to delete student.");

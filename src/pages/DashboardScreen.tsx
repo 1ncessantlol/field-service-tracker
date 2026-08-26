@@ -109,15 +109,15 @@ export default function DashboardScreen() {
     setIsLogging(true);
     try {
       if (editSessionId) {
-        await updateDoc(doc(db, 'sessions', editSessionId), {
+        updateDoc(doc(db, 'sessions', editSessionId), {
           durationMs,
           studies: stds,
           monthYear,
           manualDate,
           startTime,
-        });
+        }).catch(err => console.error("Error updating session:", err));
       } else {
-        await addDoc(collection(db, 'sessions'), {
+        addDoc(collection(db, 'sessions'), {
           uid: user.uid,
           durationMs,
           studies: stds,
@@ -126,7 +126,7 @@ export default function DashboardScreen() {
           manualDate,
           startTime,
           createdAt: serverTimestamp()
-        });
+        }).catch(err => console.error("Error adding session:", err));
       }
       
       setManualHours('');
@@ -162,7 +162,7 @@ export default function DashboardScreen() {
   const handleDeleteSession = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this session? This will recalculate your progress.")) {
       try {
-        await deleteDoc(doc(db, 'sessions', id));
+        deleteDoc(doc(db, 'sessions', id)).catch(err => console.error("Error deleting session:", err));
       } catch (err) {
         console.error("Error deleting session", err);
         alert("Failed to delete session.");

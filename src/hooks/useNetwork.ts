@@ -30,7 +30,11 @@ export function useNetwork() {
   const checkPendingWrites = async () => {
     setHasPendingWrites(true);
     try {
-      await waitForPendingWrites(db);
+      // Race the pending writes against a 3-second timeout to prevent infinite spinner
+      await Promise.race([
+        waitForPendingWrites(db),
+        new Promise((resolve) => setTimeout(resolve, 3000))
+      ]);
     } catch (error) {
       console.error("Error waiting for pending writes:", error);
     } finally {
