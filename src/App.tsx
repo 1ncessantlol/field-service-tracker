@@ -1,9 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
-import TimerScreen from './pages/TimerScreen';
-import DashboardScreen from './pages/DashboardScreen';
-import SettingsScreen from './pages/SettingsScreen';
-import StudentsScreen from './pages/StudentsScreen';
 import LoginScreen from './pages/LoginScreen';
 import { useUser } from './context/UserContext';
 import { Loader2 } from 'lucide-react';
@@ -46,14 +42,7 @@ function App() {
               <Route path="*" element={<Navigate to="/login" replace />} />
             </>
           ) : (
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Navigate to="/timer" replace />} />
-              <Route path="timer" element={<TimerScreen />} />
-              <Route path="dashboard" element={<DashboardScreen />} />
-              <Route path="students" element={<StudentsScreen />} />
-              <Route path="settings" element={<SettingsScreen />} />
-              <Route path="*" element={<Navigate to="/timer" replace />} />
-            </Route>
+            <Route path="/*" element={<Layout />} />
           )}
         </Routes>
       </BrowserRouter>

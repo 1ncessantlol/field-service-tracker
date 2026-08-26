@@ -172,7 +172,13 @@ export default function DashboardScreen() {
   };
 
   return (
-    <div className="p-6 space-y-8 min-h-full pb-24">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="p-6 space-y-8 min-h-full pb-24"
+    >
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -412,6 +418,6 @@ export default function DashboardScreen() {
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

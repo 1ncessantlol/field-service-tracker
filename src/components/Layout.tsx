@@ -1,5 +1,9 @@
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
+import TimerScreen from '../pages/TimerScreen';
+import DashboardScreen from '../pages/DashboardScreen';
+import StudentsScreen from '../pages/StudentsScreen';
+import SettingsScreen from '../pages/SettingsScreen';
 import { Timer, LayoutDashboard, Settings, Users, LogOut, UserCircle, Cloud, CloudOff, RefreshCw, Sun, Moon } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useNetwork } from '../hooks/useNetwork';
@@ -95,18 +99,16 @@ export default function Layout() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto pb-20 pt-4">
+      <main className="flex-1 overflow-y-auto pb-20 pt-4 relative">
         <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="h-full"
-          >
-            <Outlet />
-          </motion.div>
+          <Routes location={location} key={location.pathname}>
+            <Route index element={<Navigate to="/timer" replace />} />
+            <Route path="timer" element={<TimerScreen />} />
+            <Route path="dashboard" element={<DashboardScreen />} />
+            <Route path="students" element={<StudentsScreen />} />
+            <Route path="settings" element={<SettingsScreen />} />
+            <Route path="*" element={<Navigate to="/timer" replace />} />
+          </Routes>
         </AnimatePresence>
       </main>
 

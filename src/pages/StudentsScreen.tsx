@@ -126,7 +126,13 @@ export default function StudentsScreen() {
   }
 
   return (
-    <div className="p-6 space-y-6 min-h-full pb-24">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="p-6 space-y-6 min-h-full pb-24"
+    >
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Students</h1>
         <button 
@@ -234,6 +240,6 @@ export default function StudentsScreen() {
         </AnimatePresence>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

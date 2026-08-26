@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { User, Target, Save, LogOut, Bell } from 'lucide-react';
 import { useUser, type Role } from '../context/UserContext';
 
@@ -27,7 +28,13 @@ export default function SettingsScreen() {
   };
 
   return (
-    <div className="p-6 space-y-8 min-h-full pb-24">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+      className="p-6 space-y-8 min-h-full pb-24"
+    >
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
 
       {/* Role Selection */}
@@ -126,6 +133,6 @@ export default function SettingsScreen() {
           <span>Log Out</span>
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }
