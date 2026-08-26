@@ -67,13 +67,13 @@ export default function TimerScreen() {
         <div className="flex space-x-4">
           <button 
             onClick={() => setStudies(Math.max(0, studies - 1))}
-            className="flex-1 flex items-center justify-center py-3 bg-gray-100 dark:bg-zinc-900 rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-800 transition text-gray-900 dark:text-white"
+            className="flex-1 flex items-center justify-center py-3 bg-gray-100 dark:bg-zinc-900 rounded-xl hover:bg-gray-200 dark:hover:bg-zinc-800 transition-all duration-200 ease-in-out active:scale-95 text-gray-900 dark:text-white"
           >
             <Minus className="w-6 h-6" />
           </button>
           <button 
             onClick={() => setStudies(studies + 1)}
-            className="flex-1 flex items-center justify-center py-3 bg-primary rounded-xl hover:bg-primaryHover transition text-white dark:text-[#121212]"
+            className="flex-1 flex items-center justify-center py-3 bg-primary rounded-xl hover:bg-primaryHover transition-all duration-200 ease-in-out active:scale-95 text-white dark:text-[#121212]"
           >
             <Plus className="w-6 h-6" />
           </button>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Share2, Clock, BookOpen, Target, Plus, X, Loader2, Trash2, Edit2, List } from 'lucide-react';
 import { useUser, type Session } from '../context/UserContext';
 import { db } from '../firebase';
@@ -181,14 +182,14 @@ export default function DashboardScreen() {
         <div className="flex space-x-3">
           <button 
             onClick={() => setShowManualLog(true)}
-            className="p-3 bg-white dark:bg-[#1e1e1e] rounded-full text-gray-900 dark:text-white hover:text-primary transition border border-gray-200 dark:border-zinc-800"
+            className="p-3 bg-white dark:bg-[#1e1e1e] rounded-full text-gray-900 dark:text-white hover:text-primary transition-all duration-200 ease-in-out active:scale-95 border border-gray-200 dark:border-zinc-800 shadow-sm"
             title="Log Manually"
           >
             <Plus className="w-6 h-6" />
           </button>
           <button 
             onClick={handleShare}
-            className="p-3 bg-white dark:bg-[#1e1e1e] rounded-full text-gray-900 dark:text-white hover:text-primary transition border border-gray-200 dark:border-zinc-800"
+            className="p-3 bg-white dark:bg-[#1e1e1e] rounded-full text-gray-900 dark:text-white hover:text-primary transition-all duration-200 ease-in-out active:scale-95 border border-gray-200 dark:border-zinc-800 shadow-sm"
             title="Share Report"
           >
             <Share2 className="w-6 h-6" />
@@ -268,7 +269,7 @@ export default function DashboardScreen() {
               <button 
                 type="submit" 
                 disabled={isLogging}
-                className="w-full py-4 mt-2 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition disabled:opacity-50 flex items-center justify-center space-x-2"
+                className="w-full py-4 mt-2 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition-all duration-200 ease-in-out active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-2"
               >
                 {isLogging ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Save Entry</span>}
               </button>
@@ -375,8 +376,17 @@ export default function DashboardScreen() {
           <p className="text-sm text-gray-500 dark:text-zinc-400 text-center py-4">No sessions logged yet.</p>
         ) : (
           <div className="space-y-3">
-            {sessions.slice(0, 10).map(session => (
-              <div key={session.id} className="flex items-center justify-between p-4 bg-gray-100 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800">
+            <AnimatePresence initial={false}>
+              {sessions.slice(0, 10).map(session => (
+                <motion.div 
+                  key={session.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center justify-between p-4 bg-gray-100 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 overflow-hidden"
+                >
                 <div>
                   <p className="text-sm font-bold text-gray-900 dark:text-white">
                     {session.manualDate ? format(new Date(session.manualDate + 'T12:00:00'), 'MMM d, yyyy') : format(new Date(session.startTime), 'MMM d, yyyy')}
@@ -396,8 +406,9 @@ export default function DashboardScreen() {
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-              </div>
-            ))}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </div>

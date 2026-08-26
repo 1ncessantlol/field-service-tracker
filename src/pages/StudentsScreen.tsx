@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useUser } from '../context/UserContext';
 import { db } from '../firebase';
 import { collection, query, where, onSnapshot, addDoc, serverTimestamp, doc, updateDoc, deleteDoc } from 'firebase/firestore';
@@ -136,7 +137,7 @@ export default function StudentsScreen() {
               setShowForm(true);
             }
           }}
-          className="p-3 bg-primary text-white dark:text-[#121212] rounded-full hover:bg-primaryHover transition shadow-lg"
+          className="p-3 bg-primary text-white dark:text-[#121212] rounded-full hover:bg-primaryHover transition-all duration-200 ease-in-out active:scale-95 shadow-lg"
         >
           {showForm ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
         </button>
@@ -179,7 +180,7 @@ export default function StudentsScreen() {
           <button 
             type="submit" 
             disabled={isSubmitting}
-            className="w-full py-3 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition disabled:opacity-50 flex items-center justify-center space-x-2"
+            className="w-full py-3 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition-all duration-200 ease-in-out active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-2"
           >
             {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Save Student</span>}
           </button>
@@ -194,9 +195,18 @@ export default function StudentsScreen() {
             <p className="text-sm mt-1">Tap the + button to add one.</p>
           </div>
         ) : (
-          students?.map((student) => (
-            <div key={student.id} className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-5 shadow-lg border border-gray-200 dark:border-zinc-800 flex flex-col space-y-3">
-              <div className="flex justify-between items-start">
+          <AnimatePresence initial={false}>
+            {students?.map((student) => (
+              <motion.div 
+                key={student.id} 
+                layout
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
+                transition={{ duration: 0.2 }}
+                className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-5 shadow-lg border border-gray-200 dark:border-zinc-800 flex flex-col space-y-3 overflow-hidden"
+              >
+                <div className="flex justify-between items-start">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">{student.name}</h3>
                 <div className="flex items-center space-x-1">
                   <button onClick={() => handleEditStudent(student)} className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary transition">
@@ -219,8 +229,9 @@ export default function StudentsScreen() {
                   <span>{student.schedule}</span>
                 </div>
               )}
-            </div>
-          ))
+            </motion.div>
+          ))}
+        </AnimatePresence>
         )}
       </div>
     </div>

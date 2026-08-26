@@ -101,7 +101,7 @@ export default function SettingsScreen() {
           ) : (
             <button
               onClick={handleEnableNotifications}
-              className="px-4 py-2 bg-primary text-white dark:text-[#121212] font-bold rounded-lg hover:bg-primaryHover transition text-sm shadow-md"
+              className="px-4 py-2 bg-primary text-white dark:text-[#121212] font-bold rounded-lg hover:bg-primaryHover transition-all duration-200 ease-in-out active:scale-95 text-sm shadow-md"
             >
               Enable
             </button>
@@ -112,7 +112,7 @@ export default function SettingsScreen() {
       <div className="space-y-4">
         <button 
           onClick={handleSave}
-          className="w-full py-4 bg-primary text-white dark:text-[#121212] font-bold text-lg rounded-xl hover:bg-primaryHover transition flex items-center justify-center space-x-2"
+          className="w-full py-4 bg-primary text-white dark:text-[#121212] font-bold text-lg rounded-xl hover:bg-primaryHover transition-all duration-200 ease-in-out active:scale-95 flex items-center justify-center space-x-2"
         >
           <Save className="w-5 h-5" />
           <span>Save Settings</span>
@@ -120,7 +120,7 @@ export default function SettingsScreen() {
 
         <button 
           onClick={logout}
-          className="w-full py-4 bg-white dark:bg-[#1e1e1e] text-danger font-bold text-lg rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition flex items-center justify-center space-x-2 border border-danger/30"
+          className="w-full py-4 bg-white dark:bg-[#1e1e1e] text-danger font-bold text-lg rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all duration-200 ease-in-out active:scale-95 flex items-center justify-center space-x-2 border border-danger/30"
         >
           <LogOut className="w-5 h-5" />
           <span>Log Out</span>
