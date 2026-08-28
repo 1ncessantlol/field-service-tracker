@@ -88,18 +88,18 @@ export default function SettingsScreen() {
         
         <div className="space-y-3">
           <label className="text-sm font-medium text-gray-500 dark:text-zinc-400">Full Name</label>
-          <div className="flex space-x-3">
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
             <input 
               type="text" 
               value={profileName}
               onChange={(e) => setProfileName(e.target.value)}
-              className="flex-1 px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              className="w-full sm:flex-1 px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               placeholder="Enter your name"
             />
             <button 
               onClick={handleSaveName}
               disabled={isNameSaving || profileName === (user?.displayName || '')}
-              className={`px-6 py-3 font-bold rounded-lg transition-all duration-200 ease-in-out active:scale-95 text-sm shadow-md whitespace-nowrap
+              className={`w-full sm:w-auto px-6 py-3 font-bold rounded-lg transition-all duration-200 ease-in-out active:scale-95 text-sm shadow-md whitespace-nowrap
                 ${nameSaved 
                   ? 'bg-green-500 text-white hover:bg-green-600' 
                   : 'bg-primary text-white dark:text-[#121212] hover:bg-primaryHover disabled:opacity-50'
