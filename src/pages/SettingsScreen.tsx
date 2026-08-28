@@ -22,8 +22,34 @@ export default function SettingsScreen() {
     setNotificationsEnabled(permission === 'granted');
   };
 
+  const [localMonthlyGoal, setLocalMonthlyGoal] = useState<number | string>(customMonthlyGoal);
+  const [localYearlyGoal, setLocalYearlyGoal] = useState<number | string>(customYearlyGoal);
+
+  useEffect(() => {
+    setLocalMonthlyGoal(customMonthlyGoal);
+  }, [customMonthlyGoal]);
+
+  useEffect(() => {
+    setLocalYearlyGoal(customYearlyGoal);
+  }, [customYearlyGoal]);
+
+  const validateAndSaveMonthly = () => {
+    let val = Number(localMonthlyGoal);
+    if (isNaN(val) || val < 1) val = 1;
+    setLocalMonthlyGoal(val);
+    setCustomMonthlyGoal(val);
+  };
+
+  const validateAndSaveYearly = () => {
+    let val = Number(localYearlyGoal);
+    if (isNaN(val) || val < 1) val = 1;
+    setLocalYearlyGoal(val);
+    setCustomYearlyGoal(val);
+  };
+
   const handleSave = () => {
-    // Mock save action
+    validateAndSaveMonthly();
+    validateAndSaveYearly();
     alert('Settings saved!');
   };
 
@@ -73,8 +99,10 @@ export default function SettingsScreen() {
             <label className="text-sm font-medium text-gray-500 dark:text-zinc-400">Monthly Hours Goal</label>
             <input 
               type="number" 
-              value={customMonthlyGoal}
-              onChange={(e) => setCustomMonthlyGoal(e.target.value === '' ? 0 : Number(e.target.value))}
+              min="1"
+              value={localMonthlyGoal}
+              onChange={(e) => setLocalMonthlyGoal(e.target.value)}
+              onBlur={validateAndSaveMonthly}
               disabled={role !== 'Custom'}
               className="px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-gray-200 dark:disabled:bg-zinc-800"
               placeholder="e.g. 15"
@@ -85,8 +113,10 @@ export default function SettingsScreen() {
             <label className="text-sm font-medium text-gray-500 dark:text-zinc-400">Yearly Hours Goal</label>
             <input 
               type="number" 
-              value={customYearlyGoal}
-              onChange={(e) => setCustomYearlyGoal(e.target.value === '' ? 0 : Number(e.target.value))}
+              min="1"
+              value={localYearlyGoal}
+              onChange={(e) => setLocalYearlyGoal(e.target.value)}
+              onBlur={validateAndSaveYearly}
               disabled={role !== 'Custom'}
               className="px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary disabled:bg-gray-200 dark:disabled:bg-zinc-800"
               placeholder="e.g. 180"
