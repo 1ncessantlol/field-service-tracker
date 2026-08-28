@@ -188,39 +188,61 @@ export default function DashboardScreen() {
           <p className="text-primary font-medium mt-1">{role}</p>
         </div>
         <div className="flex space-x-3">
-          <button 
+          <motion.button 
             onClick={() => setShowManualLog(true)}
-            className="p-3 bg-white dark:bg-[#1e1e1e] rounded-full text-gray-900 dark:text-white hover:text-primary transition-all duration-200 ease-in-out active:scale-95 border border-gray-200 dark:border-zinc-800 shadow-sm"
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            className="p-3 bg-white dark:bg-[#1e1e1e] rounded-full text-gray-900 dark:text-white hover:text-primary transition-colors border border-gray-200 dark:border-zinc-800 shadow-sm"
             title="Log Manually"
           >
             <Plus className="w-6 h-6" />
-          </button>
-          <button 
+          </motion.button>
+          <motion.button 
             onClick={handleShare}
-            className="p-3 bg-white dark:bg-[#1e1e1e] rounded-full text-gray-900 dark:text-white hover:text-primary transition-all duration-200 ease-in-out active:scale-95 border border-gray-200 dark:border-zinc-800 shadow-sm"
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            className="p-3 bg-white dark:bg-[#1e1e1e] rounded-full text-gray-900 dark:text-white hover:text-primary transition-colors border border-gray-200 dark:border-zinc-800 shadow-sm"
             title="Share Report"
           >
             <Share2 className="w-6 h-6" />
-          </button>
+          </motion.button>
         </div>
       </div>
 
       {/* Manual Log Modal */}
+      <AnimatePresence>
       {showManualLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 dark:bg-black/80 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-[#1e1e1e] rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-gray-200 dark:border-zinc-800">
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 dark:bg-black/80 backdrop-blur-sm"
+        >
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            className="bg-white dark:bg-[#1e1e1e] rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-gray-200 dark:border-zinc-800"
+          >
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">{editSessionId ? 'Edit Time' : 'Log Time'}</h2>
-              <button onClick={() => {
-                setShowManualLog(false);
-                setEditSessionId(null);
-                setManualHours('');
-                setManualMinutes('');
-                setManualStudies('0');
-                setManualDate(new Date().toISOString().substring(0, 10));
-              }} className="text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white">
+              <motion.button 
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  setShowManualLog(false);
+                  setEditSessionId(null);
+                  setManualHours('');
+                  setManualMinutes('');
+                  setManualStudies('0');
+                  setManualDate(new Date().toISOString().substring(0, 10));
+                }} 
+                className="text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
+              >
                 <X className="w-6 h-6" />
-              </button>
+              </motion.button>
             </div>
             
             <form onSubmit={handleManualLog} className="space-y-4">
@@ -274,21 +296,30 @@ export default function DashboardScreen() {
                 />
               </div>
 
-              <button 
+              <motion.button 
                 type="submit" 
                 disabled={isLogging}
-                className="w-full py-4 mt-2 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition-all duration-200 ease-in-out active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-2"
+                whileTap={{ scale: 0.96 }}
+                whileHover={{ scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                className="w-full py-4 mt-2 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
               >
                 {isLogging ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Save Entry</span>}
-              </button>
+              </motion.button>
             </form>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
       {/* Monthly Progress */}
       {showHours && (
-        <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-4">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.05 }}
+          className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-4"
+        >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2 text-gray-900 dark:text-white">
               <Target className="w-5 h-5 text-primary" />
@@ -309,12 +340,17 @@ export default function DashboardScreen() {
           <p className="text-xs text-gray-500 dark:text-zinc-400 text-right">
             {Math.max(Number((monthlyGoal - currentMonthlyHours).toFixed(1)), 0)} hours remaining
           </p>
-        </div>
+        </motion.div>
       )}
 
       {/* Yearly Progress */}
       {showHours && showYearly && (
-        <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-4">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.1 }}
+          className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-4"
+        >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center space-x-2 text-gray-900 dark:text-white">
               <Clock className="w-5 h-5 text-primary" />
@@ -332,12 +368,17 @@ export default function DashboardScreen() {
               style={{ width: `${yearlyPercentage}%` }}
             />
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Analytics Chart */}
       {showHours && (
-        <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-4">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.15 }}
+          className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-4"
+        >
           <div className="flex items-center space-x-2 text-gray-900 dark:text-white mb-4">
             <BarChartIcon className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-semibold">Hours Distribution</h2>
@@ -355,11 +396,16 @@ export default function DashboardScreen() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Stats Grid */}
-      <div className={`grid gap-4 ${showHours ? 'grid-cols-2' : 'grid-cols-1'}`}>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.2 }}
+        className={`grid gap-4 ${showHours ? 'grid-cols-2' : 'grid-cols-1'}`}
+      >
         {showHours && (
           <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 flex flex-col items-center justify-center text-center">
             <Clock className="w-8 h-8 text-primary mb-3" />
@@ -372,10 +418,15 @@ export default function DashboardScreen() {
           <span className="text-3xl font-bold text-gray-900 dark:text-white">{monthlyStudies}</span>
           <span className="text-xs text-gray-500 dark:text-zinc-400 mt-1 uppercase tracking-wider">Studies</span>
         </div>
-      </div>
+      </motion.div>
 
       {/* Recent Activity */}
-      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-4">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.25 }}
+        className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-4"
+      >
         <div className="flex items-center space-x-2 text-gray-900 dark:text-white mb-4">
           <List className="w-5 h-5 text-primary" />
           <h2 className="text-lg font-semibold">Recent Activity</h2>
@@ -389,10 +440,10 @@ export default function DashboardScreen() {
                 <motion.div 
                   key={session.id}
                   layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
-                  transition={{ duration: 0.2 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
                   className="flex items-center justify-between p-4 bg-gray-100 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 overflow-hidden"
                 >
                 <div>
@@ -407,19 +458,27 @@ export default function DashboardScreen() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <button onClick={() => handleEditSession(session)} className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary transition">
+                  <motion.button 
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleEditSession(session)} 
+                    className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary transition-colors"
+                  >
                     <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => handleDeleteSession(session.id)} className="p-2 text-gray-500 dark:text-zinc-400 hover:text-danger transition">
+                  </motion.button>
+                  <motion.button 
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleDeleteSession(session.id)} 
+                    className="p-2 text-gray-500 dark:text-zinc-400 hover:text-danger transition-colors"
+                  >
                     <Trash2 className="w-4 h-4" />
-                  </button>
+                  </motion.button>
                 </div>
                 </motion.div>
               ))}
             </AnimatePresence>
           </div>
         )}
-      </div>
+      </motion.div>
     </motion.div>
   );
 }

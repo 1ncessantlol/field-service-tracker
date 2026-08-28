@@ -22,7 +22,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-zinc-950 dark:text-gray-100 antialiased selection:bg-primary selection:text-white">
+    <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-zinc-950 dark:text-gray-100 antialiased selection:bg-primary selection:text-white transition-colors duration-500">
       {needRefresh && (
         <div className="fixed top-0 left-0 right-0 z-[100] bg-primary text-white dark:text-[#121212] px-4 py-3 shadow-lg flex items-center justify-between safe-area-pt">
           <span className="text-sm font-bold">New version available!</span>

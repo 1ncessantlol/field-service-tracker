@@ -46,7 +46,7 @@ export default function StudentsScreen() {
       where('uid', '==', user.uid)
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
+    const unsubscribe = onSnapshot(q, { includeMetadataChanges: true }, (snapshot) => {
       const studentData: Student[] = [];
       snapshot.forEach((doc) => {
         studentData.push({ id: doc.id, ...doc.data() } as Student);
@@ -135,7 +135,7 @@ export default function StudentsScreen() {
     >
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Students</h1>
-        <button 
+        <motion.button 
           onClick={() => {
             if (showForm) {
               resetForm();
@@ -143,14 +143,25 @@ export default function StudentsScreen() {
               setShowForm(true);
             }
           }}
-          className="p-3 bg-primary text-white dark:text-[#121212] rounded-full hover:bg-primaryHover transition-all duration-200 ease-in-out active:scale-95 shadow-lg"
+          whileTap={{ scale: 0.96 }}
+          whileHover={{ scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20 }}
+          className="p-3 bg-primary text-white dark:text-[#121212] rounded-full hover:bg-primaryHover transition-colors shadow-lg"
         >
           {showForm ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
-        </button>
+        </motion.button>
       </div>
 
+      <AnimatePresence>
       {showForm && (
-        <form onSubmit={handleAddStudent} className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-4 animate-in fade-in slide-in-from-top-4">
+        <motion.form 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20 }}
+          onSubmit={handleAddStudent} 
+          className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-4"
+        >
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{editStudentId ? 'Edit Student' : 'Add Student'}</h2>
           <div>
             <label className="text-sm font-medium text-gray-500 dark:text-zinc-400 mb-1 block">Name</label>
@@ -183,15 +194,19 @@ export default function StudentsScreen() {
               placeholder="e.g. Tuesdays at 4:00 PM"
             />
           </div>
-          <button 
+          <motion.button 
             type="submit" 
             disabled={isSubmitting}
-            className="w-full py-3 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition-all duration-200 ease-in-out active:scale-95 disabled:opacity-50 flex items-center justify-center space-x-2"
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            className="w-full py-3 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
           >
             {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Save Student</span>}
-          </button>
-        </form>
+          </motion.button>
+        </motion.form>
       )}
+      </AnimatePresence>
 
       <div className="space-y-4">
         {(!students || students.length === 0) && !showForm ? (
@@ -206,21 +221,29 @@ export default function StudentsScreen() {
               <motion.div 
                 key={student.id} 
                 layout
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
                 className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-5 shadow-lg border border-gray-200 dark:border-zinc-800 flex flex-col space-y-3 overflow-hidden"
               >
                 <div className="flex justify-between items-start">
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">{student.name}</h3>
                 <div className="flex items-center space-x-1">
-                  <button onClick={() => handleEditStudent(student)} className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary transition">
+                  <motion.button 
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleEditStudent(student)} 
+                    className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary transition-colors"
+                  >
                     <Edit2 className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => handleDeleteStudent(student.id)} className="p-2 text-gray-500 dark:text-zinc-400 hover:text-danger transition">
+                  </motion.button>
+                  <motion.button 
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleDeleteStudent(student.id)} 
+                    className="p-2 text-gray-500 dark:text-zinc-400 hover:text-danger transition-colors"
+                  >
                     <Trash2 className="w-4 h-4" />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
               {student.phone && (

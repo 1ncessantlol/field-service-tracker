@@ -76,7 +76,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     // 1. Settings listener
     const userDocRef = doc(db, 'users', user.uid);
-    const unsubscribeUser = onSnapshot(userDocRef, (docSnap) => {
+    const unsubscribeUser = onSnapshot(userDocRef, { includeMetadataChanges: true }, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         setRoleState(data.role || 'Regular Pioneer');
@@ -111,7 +111,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       where('uid', '==', user.uid)
     );
     
-    const unsubscribeSessions = onSnapshot(sessionsQuery, (querySnapshot) => {
+    const unsubscribeSessions = onSnapshot(sessionsQuery, { includeMetadataChanges: true }, (querySnapshot) => {
       let monthlyDurationMs = 0;
       let monthlyStudiesTotal = 0;
       let yearlyDurationMs = 0;

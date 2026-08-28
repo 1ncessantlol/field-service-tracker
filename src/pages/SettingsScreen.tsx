@@ -80,7 +80,12 @@ export default function SettingsScreen() {
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
 
       {/* Profile Settings */}
-      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-6">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.05 }}
+        className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-6"
+      >
         <div className="flex items-center space-x-3 text-gray-900 dark:text-white mb-4">
           <User className="w-6 h-6 text-primary" />
           <h2 className="text-xl font-semibold">Profile Info</h2>
@@ -96,23 +101,31 @@ export default function SettingsScreen() {
               className="w-full sm:flex-1 px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               placeholder="Enter your name"
             />
-            <button 
+            <motion.button 
               onClick={handleSaveName}
               disabled={isNameSaving || profileName === (user?.displayName || '')}
-              className={`w-full sm:w-auto px-6 py-3 font-bold rounded-lg transition-all duration-200 ease-in-out active:scale-95 text-sm shadow-md whitespace-nowrap
+              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className={`w-full sm:w-auto px-6 py-3 font-bold rounded-lg transition-colors text-sm shadow-md whitespace-nowrap
                 ${nameSaved 
                   ? 'bg-green-500 text-white hover:bg-green-600' 
                   : 'bg-primary text-white dark:text-[#121212] hover:bg-primaryHover disabled:opacity-50'
                 }`}
             >
               {isNameSaving ? 'Saving...' : (nameSaved ? 'Saved!' : 'Save Name')}
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Role Selection */}
-      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-6">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.1 }}
+        className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-6"
+      >
         <div className="flex items-center space-x-3 text-gray-900 dark:text-white mb-4">
           <User className="w-6 h-6 text-primary" />
           <h2 className="text-xl font-semibold">Service Role</h2>
@@ -133,10 +146,15 @@ export default function SettingsScreen() {
             </label>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Custom Goals (Visible only if Custom) */}
-      <div className={`bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-6 transition-opacity duration-300 ${role === 'Custom' ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.15 }}
+        className={`bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-6 transition-opacity duration-300 ${role === 'Custom' ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}
+      >
         <div className="flex items-center space-x-3 text-gray-900 dark:text-white mb-4">
           <Target className="w-6 h-6 text-primary" />
           <h2 className="text-xl font-semibold">Custom Goals</h2>
@@ -171,10 +189,15 @@ export default function SettingsScreen() {
             />
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Notifications */}
-      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-6">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.2 }}
+        className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-6"
+      >
         <div className="flex items-center space-x-3 text-gray-900 dark:text-white mb-4">
           <Bell className="w-6 h-6 text-primary" />
           <h2 className="text-xl font-semibold">Notifications</h2>
@@ -184,32 +207,41 @@ export default function SettingsScreen() {
           {notificationsEnabled ? (
             <span className="text-sm font-bold text-green-500">Enabled</span>
           ) : (
-            <button
+            <motion.button
               onClick={handleEnableNotifications}
-              className="px-4 py-2 bg-primary text-white dark:text-[#121212] font-bold rounded-lg hover:bg-primaryHover transition-all duration-200 ease-in-out active:scale-95 text-sm shadow-md"
+              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className="px-4 py-2 bg-primary text-white dark:text-[#121212] font-bold rounded-lg hover:bg-primaryHover transition-colors text-sm shadow-md"
             >
               Enable
-            </button>
+            </motion.button>
           )}
         </div>
-      </div>
+      </motion.div>
 
       <div className="space-y-4">
-        <button 
+        <motion.button 
           onClick={handleSave}
-          className="w-full py-4 bg-primary text-white dark:text-[#121212] font-bold text-lg rounded-xl hover:bg-primaryHover transition-all duration-200 ease-in-out active:scale-95 flex items-center justify-center space-x-2"
+          whileTap={{ scale: 0.96 }}
+          whileHover={{ scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20 }}
+          className="w-full py-4 bg-primary text-white dark:text-[#121212] font-bold text-lg rounded-xl hover:bg-primaryHover transition-colors flex items-center justify-center space-x-2"
         >
           <Save className="w-5 h-5" />
           <span>Save Settings</span>
-        </button>
+        </motion.button>
 
-        <button 
+        <motion.button 
           onClick={logout}
-          className="w-full py-4 bg-white dark:bg-[#1e1e1e] text-danger font-bold text-lg rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all duration-200 ease-in-out active:scale-95 flex items-center justify-center space-x-2 border border-danger/30"
+          whileTap={{ scale: 0.96 }}
+          whileHover={{ scale: 1.02 }}
+          transition={{ type: "spring", stiffness: 400, damping: 20 }}
+          className="w-full py-4 bg-white dark:bg-[#1e1e1e] text-danger font-bold text-lg rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors flex items-center justify-center space-x-2 border border-danger/30"
         >
           <LogOut className="w-5 h-5" />
           <span>Log Out</span>
-        </button>
+        </motion.button>
       </div>
     </motion.div>
   );

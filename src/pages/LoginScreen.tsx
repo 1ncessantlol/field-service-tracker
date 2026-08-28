@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile } from 'firebase/auth';
 import { auth } from '../firebase';
 import { Mail, Lock, LogIn, UserPlus, User } from 'lucide-react';
@@ -46,7 +47,12 @@ export default function LoginScreen() {
 
   return (
     <div className="flex flex-col items-center justify-center h-screen p-6">
-      <div className="w-full max-w-sm bg-white dark:bg-[#1e1e1e] rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-zinc-800">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 400, damping: 20 }}
+        className="w-full max-w-sm bg-white dark:bg-[#1e1e1e] rounded-3xl p-8 shadow-2xl border border-gray-200 dark:border-zinc-800"
+      >
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-8">
           {isResettingPassword ? 'Reset Password' : (isLogin ? 'Welcome Back' : 'Create Account')}
         </h1>
@@ -104,57 +110,66 @@ export default function LoginScreen() {
             )}
           </div>
 
-          <button
+          <motion.button
             type="submit"
-            className="w-full py-3.5 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition flex items-center justify-center space-x-2"
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            className="w-full py-3.5 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition-colors flex items-center justify-center space-x-2"
           >
             {isResettingPassword ? <Mail className="w-5 h-5" /> : (isLogin ? <LogIn className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />)}
             <span>{isResettingPassword ? 'Send Reset Link' : (isLogin ? 'Sign In' : 'Sign Up')}</span>
-          </button>
+          </motion.button>
         </form>
 
         <div className="mt-6 flex flex-col space-y-3 text-center">
           {isLogin && !isResettingPassword && (
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.02 }}
               onClick={() => {
                 setIsResettingPassword(true);
                 setError('');
                 setSuccessMsg('');
               }}
-              className="text-gray-500 dark:text-zinc-400 hover:text-primary transition text-sm font-medium"
+              className="text-gray-500 dark:text-zinc-400 hover:text-primary transition-colors text-sm font-medium"
             >
               Forgot Password?
-            </button>
+            </motion.button>
           )}
 
           {isResettingPassword ? (
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.02 }}
               onClick={() => {
                 setIsResettingPassword(false);
                 setError('');
                 setSuccessMsg('');
               }}
-              className="text-gray-500 dark:text-zinc-400 hover:text-primary transition text-sm font-medium"
+              className="text-gray-500 dark:text-zinc-400 hover:text-primary transition-colors text-sm font-medium"
             >
               Back to Login
-            </button>
+            </motion.button>
           ) : (
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.02 }}
               onClick={() => {
                 setIsLogin(!isLogin);
                 setError('');
                 setSuccessMsg('');
               }}
-              className="text-gray-500 dark:text-zinc-400 hover:text-primary transition text-sm font-medium"
+              className="text-gray-500 dark:text-zinc-400 hover:text-primary transition-colors text-sm font-medium"
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-            </button>
+            </motion.button>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

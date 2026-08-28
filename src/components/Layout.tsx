@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import TimerScreen from '../pages/TimerScreen';
 import DashboardScreen from '../pages/DashboardScreen';
 import StudentsScreen from '../pages/StudentsScreen';
@@ -8,8 +8,10 @@ import { Timer, LayoutDashboard, Settings, Users, LogOut, UserCircle, Cloud, Clo
 import { useUser } from '../context/UserContext';
 import { useNetwork } from '../hooks/useNetwork';
 import { useTheme } from '../context/ThemeContext';
-import { useEffect } from 'react';
+import { useEffect, forwardRef } from 'react';
 import { isLastDayOfMonth } from 'date-fns';
+
+const MotionNavLink = motion(forwardRef<HTMLAnchorElement, any>((props, ref) => <NavLink ref={ref} {...props} />));
 
 export default function Layout() {
   const { user, logout } = useUser();
@@ -74,27 +76,47 @@ export default function Layout() {
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <button
+          <motion.button
             onClick={toggleTheme}
-            className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary transition-colors"
+            className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary relative w-9 h-9 flex items-center justify-center"
             aria-label="Toggle dark mode"
+            animate={{ rotate: theme === 'dark' ? 180 : 0, scale: 1 }}
+            whileTap={{ scale: 0.8 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 10 }}
           >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
-          <NavLink 
+            <AnimatePresence initial={false}>
+              <motion.div
+                key={theme}
+                initial={{ opacity: 0, rotate: -45 }}
+                animate={{ opacity: 1, rotate: 0 }}
+                exit={{ opacity: 0, rotate: 45 }}
+                transition={{ duration: 0.2 }}
+                className="absolute"
+              >
+                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </motion.div>
+            </AnimatePresence>
+          </motion.button>
+          <MotionNavLink 
             to="/settings"
-            className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary transition-colors"
+            className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary transition-colors block"
             title="Settings"
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
             <Settings className="w-5 h-5" />
-          </NavLink>
-          <button 
+          </MotionNavLink>
+          <motion.button 
             onClick={logout}
-            className="p-2 text-gray-500 dark:text-zinc-400 hover:text-danger transition-colors"
+            className="p-2 text-gray-500 dark:text-zinc-400 hover:text-danger transition-colors block"
             title="Log Out"
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
             <LogOut className="w-5 h-5" />
-          </button>
+          </motion.button>
         </div>
       </header>
 
@@ -115,53 +137,65 @@ export default function Layout() {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 w-full bg-white dark:bg-[#1e1e1e] border-t border-gray-200 dark:border-zinc-800 safe-area-pb">
         <div className="flex justify-around items-center h-16">
-          <NavLink
+          <MotionNavLink
             to="/timer"
-            className={({ isActive }) =>
+            className={({ isActive }: any) =>
               `flex flex-col items-center justify-center w-full h-full ${
                 isActive ? 'text-primary' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white'
               }`
             }
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
             <Timer className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">Timer</span>
-          </NavLink>
+          </MotionNavLink>
 
-          <NavLink
+          <MotionNavLink
             to="/dashboard"
-            className={({ isActive }) =>
+            className={({ isActive }: any) =>
               `flex flex-col items-center justify-center w-full h-full ${
                 isActive ? 'text-primary' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white'
               }`
             }
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
             <LayoutDashboard className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">Dashboard</span>
-          </NavLink>
+          </MotionNavLink>
 
-          <NavLink
+          <MotionNavLink
             to="/students"
-            className={({ isActive }) =>
+            className={({ isActive }: any) =>
               `flex flex-col items-center justify-center w-full h-full ${
                 isActive ? 'text-primary' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white'
               }`
             }
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
             <Users className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">Students</span>
-          </NavLink>
+          </MotionNavLink>
 
-          <NavLink
+          <MotionNavLink
             to="/settings"
-            className={({ isActive }) =>
+            className={({ isActive }: any) =>
               `flex flex-col items-center justify-center w-full h-full ${
                 isActive ? 'text-primary' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white'
               }`
             }
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
           >
             <Settings className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">Settings</span>
-          </NavLink>
+          </MotionNavLink>
         </div>
       </nav>
     </div>
