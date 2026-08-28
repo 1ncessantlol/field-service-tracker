@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, NavLink, useLocation, type NavLinkProps } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import TimerScreen from '../pages/TimerScreen';
 import DashboardScreen from '../pages/DashboardScreen';
@@ -11,7 +11,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useEffect, forwardRef } from 'react';
 import { isLastDayOfMonth } from 'date-fns';
 
-const MotionNavLink = motion(forwardRef<HTMLAnchorElement, any>((props, ref) => <NavLink ref={ref} {...props} />));
+const MotionNavLink = motion(forwardRef<HTMLAnchorElement, NavLinkProps>((props, ref) => <NavLink ref={ref} {...props} to={props.to} />)) as any;
 
 export default function Layout() {
   const { user, logout } = useUser();
