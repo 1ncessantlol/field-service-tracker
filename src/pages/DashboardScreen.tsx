@@ -70,7 +70,7 @@ export default function DashboardScreen() {
   const handleShare = () => {
     const monthName = format(new Date(), 'MMMM yyyy');
     let reportText = `Field Service Report\n`;
-    reportText += `Name: ${user?.email || 'Publisher'}\n`;
+    reportText += `Name: ${user?.displayName || user?.email}\n`;
     reportText += `Month: ${monthName}\n\n`;
 
     if (showHours) {
@@ -182,7 +182,9 @@ export default function DashboardScreen() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {user?.displayName ? `Welcome, ${user.displayName.split(' ')[0]}` : 'Dashboard'}
+          </h1>
           <p className="text-primary font-medium mt-1">{role}</p>
         </div>
         <div className="flex space-x-3">

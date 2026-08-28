@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
+import { onAuthStateChanged, signOut, updateProfile, type User } from 'firebase/auth';
 import { doc, onSnapshot, setDoc, collection, query, where } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 
@@ -19,6 +19,7 @@ interface UserContextType {
   user: User | null;
   loading: boolean;
   logout: () => Promise<void>;
+  updateUserName: (name: string) => Promise<void>;
   sessions: Session[];
   
   role: Role;
@@ -175,9 +176,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
     await signOut(auth);
   };
 
+  const updateUserName = async (name: string) => {
+    if (auth.currentUser) {
+      await updateProfile(auth.currentUser, { displayName: name });
+      // Trigger a re-render by shallow-copying the user object (or simply setting to auth.currentUser might work if ref changes, but cloning ensures it)
+      setUser(Object.assign({}, auth.currentUser) as User);
+    }
+  };
+
   return (
     <UserContext.Provider value={{
-      user, loading, logout,
+      user, loading, logout, updateUserName,
       role, setRole,
       customMonthlyGoal, setCustomMonthlyGoal: setCustomMonthlyGoalWrapper,
       customYearlyGoal, setCustomYearlyGoal: setCustomYearlyGoalWrapper,

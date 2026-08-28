@@ -4,7 +4,10 @@ import { User, Target, Save, LogOut, Bell } from 'lucide-react';
 import { useUser, type Role } from '../context/UserContext';
 
 export default function SettingsScreen() {
-  const { role, setRole, customMonthlyGoal, setCustomMonthlyGoal, customYearlyGoal, setCustomYearlyGoal, logout } = useUser();
+  const { user, role, setRole, customMonthlyGoal, setCustomMonthlyGoal, customYearlyGoal, setCustomYearlyGoal, logout, updateUserName } = useUser();
+  const [profileName, setProfileName] = useState(user?.displayName || '');
+  const [isNameSaving, setIsNameSaving] = useState(false);
+  const [nameSaved, setNameSaved] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   useEffect(() => {
@@ -20,6 +23,16 @@ export default function SettingsScreen() {
     }
     const permission = await Notification.requestPermission();
     setNotificationsEnabled(permission === 'granted');
+  };
+
+  const handleSaveName = async () => {
+    if (profileName !== (user?.displayName || '')) {
+      setIsNameSaving(true);
+      await updateUserName(profileName);
+      setIsNameSaving(false);
+      setNameSaved(true);
+      setTimeout(() => setNameSaved(false), 2000);
+    }
   };
 
   const [localMonthlyGoal, setLocalMonthlyGoal] = useState<number | string>(customMonthlyGoal);
@@ -47,9 +60,12 @@ export default function SettingsScreen() {
     setCustomYearlyGoal(val);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     validateAndSaveMonthly();
     validateAndSaveYearly();
+    if (profileName !== (user?.displayName || '')) {
+      await updateUserName(profileName);
+    }
     alert('Settings saved!');
   };
 
@@ -62,6 +78,38 @@ export default function SettingsScreen() {
       className="p-6 space-y-8 min-h-full pb-24"
     >
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+
+      {/* Profile Settings */}
+      <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-6">
+        <div className="flex items-center space-x-3 text-gray-900 dark:text-white mb-4">
+          <User className="w-6 h-6 text-primary" />
+          <h2 className="text-xl font-semibold">Profile Info</h2>
+        </div>
+        
+        <div className="space-y-3">
+          <label className="text-sm font-medium text-gray-500 dark:text-zinc-400">Full Name</label>
+          <div className="flex space-x-3">
+            <input 
+              type="text" 
+              value={profileName}
+              onChange={(e) => setProfileName(e.target.value)}
+              className="flex-1 px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              placeholder="Enter your name"
+            />
+            <button 
+              onClick={handleSaveName}
+              disabled={isNameSaving || profileName === (user?.displayName || '')}
+              className={`px-6 py-3 font-bold rounded-lg transition-all duration-200 ease-in-out active:scale-95 text-sm shadow-md whitespace-nowrap
+                ${nameSaved 
+                  ? 'bg-green-500 text-white hover:bg-green-600' 
+                  : 'bg-primary text-white dark:text-[#121212] hover:bg-primaryHover disabled:opacity-50'
+                }`}
+            >
+              {isNameSaving ? 'Saving...' : (nameSaved ? 'Saved!' : 'Save Name')}
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Role Selection */}
       <div className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-6">
