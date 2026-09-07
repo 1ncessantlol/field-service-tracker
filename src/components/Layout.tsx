@@ -8,10 +8,8 @@ import { Timer, LayoutDashboard, Settings, Users, LogOut, UserCircle, Cloud, Clo
 import { useUser } from '../context/UserContext';
 import { useNetwork } from '../hooks/useNetwork';
 import { useTheme } from '../context/ThemeContext';
-import { useEffect, useState, forwardRef } from 'react';
+import { useEffect, forwardRef } from 'react';
 import { isLastDayOfMonth } from 'date-fns';
-import { disableNetwork, enableNetwork } from 'firebase/firestore';
-import { db } from '../firebase';
 
 const MotionNavLink = motion(forwardRef<HTMLAnchorElement, NavLinkProps>((props, ref) => <NavLink ref={ref} {...props} to={props.to} />)) as any;
 
@@ -20,23 +18,6 @@ export default function Layout() {
   const { isOnline, hasPendingWrites } = useNetwork();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
-  const [isSyncing, setIsSyncing] = useState(false);
-
-  const forceSync = async () => {
-    try {
-      setIsSyncing(true);
-      await disableNetwork(db);
-      console.log("Network disabled");
-      await enableNetwork(db);
-      console.log("Network re-enabled, queue flushing...");
-    } catch (error) {
-      console.error("Force sync failed:", error);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-
   useEffect(() => {
     const checkEndOfMonth = () => {
       const today = new Date();
@@ -94,21 +75,6 @@ export default function Layout() {
           </div>
         </div>
         <div className="flex items-center space-x-2">
-          <motion.button
-            onClick={forceSync}
-            disabled={isSyncing}
-            className="px-3 py-1.5 text-xs font-semibold bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-zinc-300 rounded-lg hover:bg-gray-200 dark:hover:bg-zinc-700 transition-colors flex items-center space-x-1 border border-gray-200 dark:border-zinc-700 disabled:opacity-50"
-            whileTap={{ scale: 0.95 }}
-          >
-            {isSyncing ? (
-              <>
-                <RefreshCw className="w-3 h-3 animate-spin" />
-                <span>Syncing...</span>
-              </>
-            ) : (
-              <span>Force Sync</span>
-            )}
-          </motion.button>
           <motion.button
             onClick={toggleTheme}
             className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary relative w-9 h-9 flex items-center justify-center"
