@@ -10,6 +10,7 @@ interface Student {
   name: string;
   phone: string;
   schedule: string;
+  notes?: string;
   createdAt: any;
 }
 
@@ -23,6 +24,7 @@ export default function StudentsScreen() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [schedule, setSchedule] = useState('');
+  const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editStudentId, setEditStudentId] = useState<string | null>(null);
 
@@ -30,6 +32,7 @@ export default function StudentsScreen() {
     setName('');
     setPhone('');
     setSchedule('');
+    setNotes('');
     setEditStudentId(null);
     setShowForm(false);
   };
@@ -78,7 +81,8 @@ export default function StudentsScreen() {
         updateDoc(doc(db, 'studies', editStudentId), {
           name: name.trim(),
           phone: phone.trim(),
-          schedule: schedule.trim()
+          schedule: schedule.trim(),
+          notes: notes.trim()
         }).catch(err => console.error("Error updating student:", err));
       } else {
         addDoc(collection(db, 'studies'), {
@@ -86,6 +90,7 @@ export default function StudentsScreen() {
           name: name.trim(),
           phone: phone.trim(),
           schedule: schedule.trim(),
+          notes: notes.trim(),
           createdAt: serverTimestamp()
         }).catch(err => console.error("Error adding student:", err));
       }
@@ -103,6 +108,7 @@ export default function StudentsScreen() {
     setName(student.name);
     setPhone(student.phone || '');
     setSchedule(student.schedule || '');
+    setNotes(student.notes || '');
     setShowForm(true);
   };
 
@@ -194,6 +200,16 @@ export default function StudentsScreen() {
               placeholder="e.g. Tuesdays at 4:00 PM"
             />
           </div>
+          <div>
+            <label className="text-sm font-medium text-gray-500 dark:text-zinc-400 mb-1 block">Notes</label>
+            <textarea 
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
+              placeholder="Any details about the study..."
+            />
+          </div>
           <motion.button 
             type="submit" 
             disabled={isSubmitting}
@@ -257,6 +273,11 @@ export default function StudentsScreen() {
                   <Calendar className="w-4 h-4 text-primary" />
                   <span>{student.schedule}</span>
                 </div>
+              )}
+              {student.notes && (
+                <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1 line-clamp-2">
+                  {student.notes}
+                </p>
               )}
             </motion.div>
           ))}
