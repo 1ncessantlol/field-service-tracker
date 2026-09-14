@@ -4,7 +4,8 @@ import TimerScreen from '../pages/TimerScreen';
 import DashboardScreen from '../pages/DashboardScreen';
 import StudentsScreen from '../pages/StudentsScreen';
 import SettingsScreen from '../pages/SettingsScreen';
-import { Timer, LayoutDashboard, Settings, Users, LogOut, UserCircle, Cloud, CloudOff, RefreshCw, Sun, Moon } from 'lucide-react';
+import MonthlyHistory from './MonthlyHistory';
+import { Timer, LayoutDashboard, Settings, Users, LogOut, UserCircle, Cloud, CloudOff, RefreshCw, Sun, Moon, History } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 import { useNetwork } from '../hooks/useNetwork';
 import { useTheme } from '../context/ThemeContext';
@@ -127,6 +128,7 @@ export default function Layout() {
             <Route path="timer" element={<TimerScreen />} />
             <Route path="dashboard" element={<DashboardScreen />} />
             <Route path="students" element={<StudentsScreen />} />
+            <Route path="history" element={<MonthlyHistory />} />
             <Route path="settings" element={<SettingsScreen />} />
             <Route path="*" element={<Navigate to="/timer" replace />} />
           </Routes>
@@ -179,6 +181,21 @@ export default function Layout() {
           >
             <Users className="w-6 h-6 mb-1" />
             <span className="text-xs font-medium">Students</span>
+          </MotionNavLink>
+
+          <MotionNavLink
+            to="/history"
+            className={({ isActive }: any) =>
+              `flex flex-col items-center justify-center w-full h-full ${
+                isActive ? 'text-primary' : 'text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white'
+              }`
+            }
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+          >
+            <History className="w-6 h-6 mb-1" />
+            <span className="text-xs font-medium">History</span>
           </MotionNavLink>
 
           <MotionNavLink
