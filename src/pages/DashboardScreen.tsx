@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, Clock, BookOpen, Target, Plus, X, Loader2, Trash2, Edit2, List } from 'lucide-react';
+import { Share2, Clock, BookOpen, Target, Plus, X, Loader2, Trash2, Edit2, List, Trophy, Sparkles } from 'lucide-react';
 import { useUser, type Session } from '../context/UserContext';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
@@ -8,6 +8,17 @@ import { format } from 'date-fns';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
 import { BarChart as BarChartIcon } from 'lucide-react';
+
+const CELEBRATION_MESSAGES = [
+  'Monthly goal unlocked!',
+  'Incredible consistency!',
+  'Target crushed. Outstanding work!',
+  'Hours secured. You killed it this month!',
+  'Phenomenal effort! Keep up the great pace.',
+  'Milestone achieved! Enjoy the satisfaction of a job well done.',
+  'You set a goal and smashed it!',
+  'Fantastic dedication this month!'
+];
 
 export default function DashboardScreen() {
   const { 
@@ -171,6 +182,15 @@ export default function DashboardScreen() {
     }
   };
 
+  const activeMonthlyGoal = monthlyGoal > 0 ? monthlyGoal : 30;
+  const isGoalReached = showHours && currentMonthlyHours >= activeMonthlyGoal;
+
+  const celebrationMessage = useMemo(() => {
+    if (!isGoalReached) return '';
+    const randomIndex = Math.floor(Math.random() * CELEBRATION_MESSAGES.length);
+    return CELEBRATION_MESSAGES[randomIndex];
+  }, [isGoalReached]);
+
   return (
     <motion.div 
       initial={{ opacity: 0 }}
@@ -210,6 +230,40 @@ export default function DashboardScreen() {
           </motion.button>
         </div>
       </div>
+
+      {/* Goal Reached Celebration Banner */}
+      <AnimatePresence>
+        {isGoalReached && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95, height: 0, marginBottom: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="relative overflow-hidden bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 rounded-2xl p-6 shadow-xl shadow-amber-500/20 text-white mb-8"
+          >
+            <div className="absolute -right-4 -top-4 opacity-20 transform rotate-12 pointer-events-none">
+              <Trophy className="w-32 h-32" />
+            </div>
+            <div className="absolute left-1/4 top-2 opacity-30 animate-pulse pointer-events-none">
+              <Sparkles className="w-8 h-8" />
+            </div>
+            <div className="relative z-10 flex items-center space-x-4">
+              <div className="bg-white/20 p-3 rounded-xl backdrop-blur-sm shadow-sm">
+                <Trophy className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold flex items-center text-white">
+                  Goal Reached! 
+                  <Sparkles className="w-5 h-5 ml-2 text-yellow-200 animate-pulse" />
+                </h2>
+                <p className="text-amber-50 font-medium text-sm mt-1">
+                  {celebrationMessage}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Manual Log Modal */}
       <AnimatePresence>
