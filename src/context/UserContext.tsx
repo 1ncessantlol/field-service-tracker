@@ -96,14 +96,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // 2. Sessions listener for current Service Year (Sept 1st to Aug 31st)
+    // 2. Sessions listener for current Calendar Year (Jan 1st to Dec 31st)
     const now = new Date();
-    const currentMonthIndex = now.getMonth();
-    let serviceYearStartYear = now.getFullYear();
-    if (currentMonthIndex < 8) { // If before September
-      serviceYearStartYear -= 1;
-    }
-    const serviceYearStart = new Date(serviceYearStartYear, 8, 1).getTime();
+    const currentYearStart = new Date(now.getFullYear(), 0, 1).getTime();
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
     const sessionsQuery = query(
@@ -125,17 +120,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const studies = data.studies || 0;
         const startTime = data.startTime || 0;
 
+        // Filter out sessions that are not in the current calendar year
+        if (startTime < currentYearStart) return;
+
         allSessions.push({ id: doc.id, ...data } as Session);
 
-        if (startTime >= serviceYearStart) {
-          // Add to yearly totals
-          yearlyDurationMs += duration;
+        // Add to yearly totals (filtered by currentYearStart above)
+        yearlyDurationMs += duration;
 
-          // Add to monthly totals if it falls in the current month
-          if (startTime >= currentMonthStart) {
-            monthlyDurationMs += duration;
-            monthlyStudiesTotal += studies;
-          }
+        // Add to monthly totals if it falls in the current month
+        if (startTime >= currentMonthStart) {
+          monthlyDurationMs += duration;
+          monthlyStudiesTotal += studies;
         }
       });
       
