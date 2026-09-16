@@ -103,14 +103,19 @@ export function useTimer(): UseTimerResult {
 
     // Save active session to Firestore
     try {
-      await setDoc(doc(db, 'sessions', sessionId), {
+      if (!navigator.onLine) {
+        alert("Started offline! Will sync automatically when connection returns");
+      }
+      setDoc(doc(db, 'sessions', sessionId), {
         uid: user.uid,
         startTime: now,
         status: 'active',
         monthYear: new Date(now).toISOString().substring(0, 7) // e.g. "2026-08"
+      }).catch(err => {
+        console.error("Error starting session in Firestore:", err);
       });
     } catch (err) {
-      console.error("Error starting session in Firestore:", err);
+      console.error("Error initiating session start:", err);
     }
   }, [user]);
 
@@ -126,6 +131,15 @@ export function useTimer(): UseTimerResult {
     const endTime = Date.now();
     const durationMs = endTime - startTime;
 
+    // Backup state locally before clearing active timer just in case
+    const sessionData = {
+      endTime,
+      durationMs,
+      studies,
+      status: 'completed'
+    };
+    localStorage.setItem(`fst_backup_${sessionId}`, JSON.stringify(sessionData));
+
     // Clear local state
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(START_TIME_KEY);
@@ -134,14 +148,18 @@ export function useTimer(): UseTimerResult {
 
     // Save completed session to Firestore
     try {
-      await updateDoc(doc(db, 'sessions', sessionId), {
-        endTime,
-        durationMs,
-        studies,
-        status: 'completed'
-      });
+      if (!navigator.onLine) {
+        alert("Saved offline! Will sync automatically when connection returns");
+      }
+      updateDoc(doc(db, 'sessions', sessionId), sessionData)
+        .then(() => {
+          localStorage.removeItem(`fst_backup_${sessionId}`);
+        })
+        .catch(err => {
+          console.error("Error stopping session in Firestore:", err);
+        });
     } catch (err) {
-      console.error("Error stopping session in Firestore:", err);
+      console.error("Error initiating session save:", err);
     }
   }, [user]);
 

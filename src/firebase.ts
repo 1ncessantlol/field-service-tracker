@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { initializeFirestore } from "firebase/firestore";
+import { initializeFirestore, enableIndexedDbPersistence } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyByy-L7nyXUe0v2u-XfWUxb48AkZRPInFI",
@@ -19,5 +19,10 @@ export const auth = getAuth(app);
 
 // Initialize Firestore with experimental long polling
 export const db = initializeFirestore(app, { experimentalForceLongPolling: true });
+
+// Enable offline persistence
+enableIndexedDbPersistence(db).catch((err) => {
+  console.error("Firebase persistence error:", err.code);
+});
 
 export default app;

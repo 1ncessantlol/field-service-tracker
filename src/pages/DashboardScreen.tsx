@@ -120,6 +120,10 @@ export default function DashboardScreen() {
     
     setIsLogging(true);
     try {
+      if (!navigator.onLine) {
+        alert("Saved offline! Will sync automatically when connection returns");
+      }
+      
       if (editSessionId) {
         updateDoc(doc(db, 'sessions', editSessionId), {
           durationMs,
