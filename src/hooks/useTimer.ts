@@ -220,6 +220,7 @@ export function useTimer(): UseTimerResult {
     localStorage.removeItem(STATUS_KEY);
     localStorage.removeItem('fst_notified');
     setStatus('idle');
+    setElapsedTimeMs(0);
 
     // Save completed session to Firestore
     try {
