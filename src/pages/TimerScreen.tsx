@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from '../hooks/useTimer';
-import { Play, Square, Plus, Minus, BookOpen } from 'lucide-react';
+import { Play, Square, Plus, Minus, BookOpen, Pause } from 'lucide-react';
 
 export default function TimerScreen() {
-  const { isRunning, elapsedTimeMs, startTimer, stopTimer } = useTimer();
+  const { status, elapsedTimeMs, startTimer, pauseTimer, resumeTimer, stopTimer } = useTimer();
   const [studies, setStudies] = useState(0);
 
   // Format elapsed time as HH:MM:SS
@@ -19,14 +19,10 @@ export default function TimerScreen() {
       .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const handleToggleTimer = () => {
-    if (isRunning) {
-      if (window.confirm("End this session?")) {
-        stopTimer(studies);
-        setStudies(0); // Reset studies for next session
-      }
-    } else {
-      startTimer();
+  const handleStopTimer = () => {
+    if (window.confirm("End this session?")) {
+      stopTimer(studies);
+      setStudies(0); // Reset studies for next session
     }
   };
 
@@ -52,23 +48,69 @@ export default function TimerScreen() {
         </div>
       </motion.div>
 
-      <motion.button
-        onClick={handleToggleTimer}
-        whileTap={{ scale: 0.96 }}
-        whileHover={{ scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 400, damping: 20 }}
-        className={`relative flex items-center justify-center w-48 h-48 rounded-full shadow-2xl transition-colors duration-300 ease-in-out ${
-          isRunning 
-            ? 'bg-white dark:bg-[#1e1e1e] border-4 border-danger text-danger' 
-            : 'bg-primary text-white dark:text-[#121212] hover:bg-primaryHover'
-        }`}
-      >
-        {isRunning ? (
-          <Square className="w-16 h-16 fill-current" />
-        ) : (
-          <Play className="w-20 h-20 fill-current ml-2" />
-        )}
-      </motion.button>
+      <div className="relative flex items-center justify-center h-48 w-full max-w-sm">
+        <AnimatePresence>
+          {status === 'idle' ? (
+            <motion.button
+              key="start-btn"
+              onClick={startTimer}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              whileTap={{ scale: 0.96 }}
+              whileHover={{ scale: 1.02 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className="absolute bg-primary text-white dark:text-[#121212] hover:bg-primaryHover rounded-full w-48 h-48 flex items-center justify-center shadow-2xl z-10"
+            >
+              <Play className="w-20 h-20 fill-current ml-2" />
+            </motion.button>
+          ) : (
+            <motion.div
+              key="active-controls"
+              className="absolute flex items-center space-x-6 z-10"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <motion.button
+                onClick={status === 'running' ? pauseTimer : resumeTimer}
+                initial={{ x: 80, opacity: 0, scale: 0.5 }}
+                animate={{ x: 0, opacity: 1, scale: 1 }}
+                exit={{ x: 80, opacity: 0, scale: 0.5 }}
+                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className={`w-32 h-32 rounded-full shadow-xl flex items-center justify-center border-4 transition-colors duration-300 ease-in-out ${
+                  status === 'paused'
+                    ? 'bg-amber-100 dark:bg-amber-900/30 border-amber-500 text-amber-500'
+                    : 'bg-white dark:bg-[#1e1e1e] border-gray-200 dark:border-zinc-700 text-gray-700 dark:text-zinc-300 hover:border-primary hover:text-primary'
+                }`}
+              >
+                <div className={status === 'paused' ? 'animate-pulse' : ''}>
+                  {status === 'paused' ? (
+                    <Play className="w-12 h-12 fill-current ml-1" />
+                  ) : (
+                    <Pause className="w-12 h-12 fill-current" />
+                  )}
+                </div>
+              </motion.button>
+
+              <motion.button
+                onClick={handleStopTimer}
+                initial={{ x: -80, opacity: 0, scale: 0.5 }}
+                animate={{ x: 0, opacity: 1, scale: 1 }}
+                exit={{ x: -80, opacity: 0, scale: 0.5 }}
+                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className="w-32 h-32 rounded-full shadow-xl flex items-center justify-center bg-white dark:bg-[#1e1e1e] border-4 border-danger text-danger hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+              >
+                <Square className="w-12 h-12 fill-current" />
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       <motion.div 
         className="w-full max-w-sm bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800"
