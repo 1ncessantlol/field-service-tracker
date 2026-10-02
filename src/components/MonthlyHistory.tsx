@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { db } from '../firebase';
 import { useUser } from '../context/UserContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Edit2, Trash2, X, Loader2 } from 'lucide-react';
+import { Edit2, Trash2, X, Loader2, Share } from 'lucide-react';
 
 interface Report {
   id: string;
@@ -160,6 +160,33 @@ export default function MonthlyHistory() {
     }
   };
 
+  const handleShare = async (monthYear: string, group: { totalHours: number; records: Report[] }) => {
+    const totalStudies = group.records.reduce((sum, record) => sum + (Number(record.studies) || 0), 0);
+    const name = user?.displayName || 'Unknown';
+    
+    const reportText = `Field Service Report\nName: ${name}\nStatus: ${role}\nMonth: ${monthYear}\n\nHours: ${group.totalHours.toFixed(1)}\nBible Studies: ${totalStudies}\n\n[Generated via Field Service Tracker]`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          text: reportText
+        });
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error("Error sharing:", err);
+        }
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(reportText);
+        alert("Report copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy:", err);
+        alert("Failed to copy report to clipboard.");
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -188,9 +215,19 @@ export default function MonthlyHistory() {
             >
               <div className="bg-gray-50 dark:bg-zinc-800/50 px-4 py-3 flex justify-between items-center border-b border-gray-100 dark:border-zinc-800">
                 <h3 className="font-semibold text-lg text-gray-800 dark:text-gray-100">{monthYear}</h3>
-                <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
-                  {group.totalHours.toFixed(1)} hrs
-                </span>
+                <div className="flex items-center space-x-3">
+                  <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                    {group.totalHours.toFixed(1)} hrs
+                  </span>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => handleShare(monthYear, group)}
+                    className="p-1.5 bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-gray-200 rounded-full hover:bg-gray-300 dark:hover:bg-zinc-600 transition-colors"
+                    title="Share Report"
+                  >
+                    <Share className="w-4 h-4" />
+                  </motion.button>
+                </div>
               </div>
               <div className="divide-y divide-gray-100 dark:divide-zinc-800/50">
                 <AnimatePresence initial={false}>

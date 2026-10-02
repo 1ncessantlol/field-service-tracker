@@ -78,25 +78,30 @@ export default function DashboardScreen() {
     return { month, hours: Number(total.toFixed(1)) };
   });
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const monthName = format(new Date(), 'MMMM yyyy');
-    let reportText = `Field Service Report\n`;
-    reportText += `Name: ${user?.displayName || user?.email}\n`;
-    reportText += `Month: ${monthName}\n\n`;
-
-    if (showHours) {
-      reportText += `Hours: ${currentMonthlyHours}\n`;
-    }
-    reportText += `Bible Studies: ${monthlyStudies}\n\n`;
-    reportText += `[Generated via Field Service Tracker]`;
+    const name = user?.displayName || 'Unknown';
+    
+    const reportText = `Field Service Report\nName: ${name}\nStatus: ${role}\nMonth: ${monthName}\n\nHours: ${currentMonthlyHours}\nBible Studies: ${monthlyStudies}\n\n[Generated via Field Service Tracker]`;
 
     if (navigator.share) {
-      navigator.share({
-        title: `Service Report - ${monthName}`,
-        text: reportText,
-      }).catch(console.error);
+      try {
+        await navigator.share({
+          text: reportText
+        });
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          console.error("Error sharing:", err);
+        }
+      }
     } else {
-      alert("Web Share API not supported in this browser. Here is your report to copy:\n\n" + reportText);
+      try {
+        await navigator.clipboard.writeText(reportText);
+        alert("Report copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy:", err);
+        alert("Failed to copy report to clipboard.");
+      }
     }
   };
 
