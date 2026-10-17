@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, Clock, BookOpen, Target, Trash2, List, Trophy, Sparkles, TrendingUp } from 'lucide-react';
+import { Share2, Clock, BookOpen, Target, Trash2, List, Trophy, Sparkles, TrendingUp, Plus } from 'lucide-react';
 import { useUser } from '../context/UserContext';
+import LogPastSessionModal from '../components/LogPastSessionModal';
 import { db } from '../firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
@@ -32,6 +33,7 @@ export default function DashboardScreen() {
     sessions
   } = useUser();
   const { theme } = useTheme();
+  const [showPastSessionModal, setShowPastSessionModal] = useState(false);
 
   // Determine goals based on role
   let monthlyGoal = 0;
@@ -165,19 +167,38 @@ export default function DashboardScreen() {
           </h1>
           <p className="text-primary font-medium mt-1">{role}</p>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 items-center">
+          <motion.button
+            onClick={() => setShowPastSessionModal(true)}
+            whileTap={{ scale: 0.96 }}
+            whileHover={{ scale: 1.02 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20 }}
+            className="h-12 px-4 flex items-center space-x-1.5 bg-white dark:bg-[#1e1e1e] rounded-full text-xs font-semibold text-gray-900 dark:text-white hover:text-primary transition-colors border border-gray-200 dark:border-zinc-800 shadow-sm"
+            title="Log Past Session"
+            aria-label="Log Past Session"
+          >
+            <Plus className="w-4 h-4 text-primary" />
+            <span>Log Session</span>
+          </motion.button>
           <motion.button
             onClick={handleShare}
             whileTap={{ scale: 0.96 }}
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            className="p-3 bg-white dark:bg-[#1e1e1e] rounded-full text-gray-900 dark:text-white hover:text-primary transition-colors border border-gray-200 dark:border-zinc-800 shadow-sm"
+            className="w-12 h-12 flex items-center justify-center bg-white dark:bg-[#1e1e1e] rounded-full text-gray-900 dark:text-white hover:text-primary transition-colors border border-gray-200 dark:border-zinc-800 shadow-sm"
             title="Share Report"
+            aria-label="Share Report"
           >
-            <Share2 className="w-6 h-6" />
+            <Share2 className="w-5 h-5" />
           </motion.button>
         </div>
       </div>
+
+      {/* Isolated Log Past Session Modal */}
+      <LogPastSessionModal
+        isOpen={showPastSessionModal}
+        onClose={() => setShowPastSessionModal(false)}
+      />
 
       {/* Goal Reached Celebration Banner */}
       <AnimatePresence>
