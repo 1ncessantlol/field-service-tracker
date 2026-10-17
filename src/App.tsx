@@ -11,7 +11,9 @@ function App() {
   const {
     needRefresh: [needRefresh],
     updateServiceWorker,
-  } = useRegisterSW();
+  } = useRegisterSW({
+    immediate: true,
+  });
 
   if (loading) {
     return (

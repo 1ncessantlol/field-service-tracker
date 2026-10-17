@@ -5,22 +5,20 @@ import { Play, Square, Plus, Minus, BookOpen, Pause, Loader2 } from 'lucide-reac
 
 /**
  * Safe helper function for mobile haptic feedback.
- * Checks if 'vibrate' in navigator is supported and wraps calls in a try/catch
- * block so unsupported browsers or restricted contexts never throw an error.
+ * Guarded with typeof window !== 'undefined' && 'vibrate' in navigator && typeof navigator.vibrate === 'function'
+ * Wrapped in try/catch so unsupported browsers (e.g. iOS Safari) never throw an error.
  */
 const triggerHaptic = (pattern: number | number[]) => {
   try {
     if (
       typeof window !== 'undefined' &&
-      'navigator' in window &&
       'vibrate' in navigator &&
       typeof navigator.vibrate === 'function'
     ) {
-      navigator.vibrate(pattern);
+      window.navigator.vibrate(pattern);
     }
-  } catch (error) {
+  } catch {
     // Fail silently in unsupported environments or restricted contexts
-    console.debug('Haptic feedback not supported or blocked:', error);
   }
 };
 
