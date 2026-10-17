@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, Clock, BookOpen, Target, Plus, X, Loader2, Trash2, Edit2, List, Trophy, Sparkles } from 'lucide-react';
+import { Share2, Clock, BookOpen, Target, Plus, X, Loader2, Trash2, Edit2, List, Trophy, Sparkles, TrendingUp } from 'lucide-react';
 import { useUser, type Session } from '../context/UserContext';
 import { db } from '../firebase';
 import { collection, addDoc, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
@@ -65,6 +65,38 @@ export default function DashboardScreen() {
 
   const monthlyPercentage = monthlyGoal > 0 ? Math.min((currentMonthlyHours / monthlyGoal) * 100, 100) : 0;
   const yearlyPercentage = yearlyGoal > 0 ? Math.min((currentYearlyHours / yearlyGoal) * 100, 100) : 0;
+
+  // Dynamic Pace Calculation for Monthly Goal
+  const { daysRemaining, currentMonthName, hoursRemaining, surplusHours, formattedPace } = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonthIndex = now.getMonth();
+    const currentMonthName = format(now, 'MMMM');
+    const totalDaysInMonth = new Date(currentYear, currentMonthIndex + 1, 0).getDate();
+    const todayDate = now.getDate();
+    const daysRemaining = Math.max(1, totalDaysInMonth - todayDate + 1);
+
+    const hoursRemaining = Math.max(0, Number((monthlyGoal - currentMonthlyHours).toFixed(1)));
+    const surplusHours = Number((currentMonthlyHours - monthlyGoal).toFixed(1));
+
+    let formattedPace = '';
+    if (hoursRemaining > 0) {
+      const dailyPaceHours = hoursRemaining / daysRemaining;
+      const totalMinutesPerDay = Math.ceil(dailyPaceHours * 60);
+      const paceHours = Math.floor(totalMinutesPerDay / 60);
+      const paceMins = totalMinutesPerDay % 60;
+
+      if (paceHours > 0 && paceMins > 0) {
+        formattedPace = `${paceHours}h ${paceMins}m / day`;
+      } else if (paceHours > 0) {
+        formattedPace = `${paceHours}h / day`;
+      } else {
+        formattedPace = `${paceMins}m / day`;
+      }
+    }
+
+    return { daysRemaining, currentMonthName, hoursRemaining, surplusHours, formattedPace };
+  }, [monthlyGoal, currentMonthlyHours]);
 
   // Chart Data Aggregation
   const chartData = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(month => {
@@ -403,6 +435,45 @@ export default function DashboardScreen() {
           <p className="text-xs text-gray-500 dark:text-zinc-400 text-right">
             {Math.max(Number((monthlyGoal - currentMonthlyHours).toFixed(1)), 0)} hours remaining
           </p>
+
+          {/* Dynamic Pace Calculator Badge */}
+          {monthlyGoal > 0 && (
+            <div
+              className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl border text-xs font-medium transition-all ${
+                hoursRemaining <= 0
+                  ? 'bg-amber-500/10 dark:bg-amber-500/15 border-amber-500/30 text-amber-900 dark:text-amber-200'
+                  : 'bg-primary/10 dark:bg-primary/10 border-primary/20 text-gray-800 dark:text-zinc-200'
+              }`}
+            >
+              {hoursRemaining <= 0 ? (
+                <div className="flex items-center justify-between w-full flex-wrap gap-1">
+                  <span className="flex items-center space-x-1.5 font-semibold text-amber-800 dark:text-amber-200">
+                    <span>Monthly goal reached! 🎉</span>
+                  </span>
+                  {surplusHours > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-900 dark:text-amber-100 font-bold text-[11px]">
+                      +{surplusHours} hrs above goal
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between w-full flex-wrap gap-1">
+                  <div className="flex items-center space-x-1.5">
+                    <TrendingUp className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-gray-700 dark:text-zinc-300">
+                      Pace needed:{' '}
+                      <strong className="font-bold text-gray-900 dark:text-white">
+                        {formattedPace}
+                      </strong>
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-gray-500 dark:text-zinc-400">
+                    ({daysRemaining} {daysRemaining === 1 ? 'day' : 'days'} left in {currentMonthName})
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </motion.div>
       )}
 
