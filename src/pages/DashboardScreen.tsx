@@ -21,10 +21,10 @@ const CELEBRATION_MESSAGES = [
 ];
 
 export default function DashboardScreen() {
-  const { 
+  const {
     user,
-    role, 
-    customMonthlyGoal, 
+    role,
+    customMonthlyGoal,
     customYearlyGoal,
     currentMonthlyHours,
     currentYearlyHours,
@@ -81,7 +81,7 @@ export default function DashboardScreen() {
   const handleShare = async () => {
     const monthName = format(new Date(), 'MMMM yyyy');
     const name = user?.displayName || 'Unknown';
-    
+
     const reportText = `Field Service Report\nName: ${name}\nStatus: ${role}\nMonth: ${monthName}\n\nHours: ${currentMonthlyHours}\nBible Studies: ${monthlyStudies}\n\n[Generated via Field Service Tracker]`;
 
     if (navigator.share) {
@@ -112,7 +112,7 @@ export default function DashboardScreen() {
     const hrs = parseInt(manualHours) || 0;
     const mins = parseInt(manualMinutes) || 0;
     const stds = parseInt(manualStudies) || 0;
-    
+
     if (hrs === 0 && mins === 0 && stds === 0) {
       alert("Please enter at least some time or studies.");
       return;
@@ -122,13 +122,13 @@ export default function DashboardScreen() {
     // Use the selected date to derive monthYear and startTime
     const monthYear = manualDate.substring(0, 7);
     const startTime = new Date(`${manualDate}T12:00:00`).getTime();
-    
+
     setIsLogging(true);
     try {
       if (!navigator.onLine) {
         alert("Saved offline! Will sync automatically when connection returns");
       }
-      
+
       if (editSessionId) {
         updateDoc(doc(db, 'sessions', editSessionId), {
           durationMs,
@@ -149,7 +149,7 @@ export default function DashboardScreen() {
           createdAt: serverTimestamp()
         }).catch(err => console.error("Error adding session:", err));
       }
-      
+
       setManualHours('');
       setManualMinutes('');
       setManualStudies('0');
@@ -167,15 +167,15 @@ export default function DashboardScreen() {
     const d = new Date(session.startTime);
     const dateStr = session.manualDate || d.toISOString().substring(0, 10);
     setManualDate(dateStr);
-    
+
     const totalMins = Math.floor(session.durationMs / 60000);
     const hrs = Math.floor(totalMins / 60);
     const mins = totalMins % 60;
-    
+
     setManualHours(hrs > 0 ? hrs.toString() : '');
     setManualMinutes(mins > 0 ? mins.toString() : '');
     setManualStudies(session.studies > 0 ? session.studies.toString() : '0');
-    
+
     setEditSessionId(session.id);
     setShowManualLog(true);
   };
@@ -201,7 +201,7 @@ export default function DashboardScreen() {
   }, [isGoalReached]);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -217,7 +217,7 @@ export default function DashboardScreen() {
           <p className="text-primary font-medium mt-1">{role}</p>
         </div>
         <div className="flex space-x-3">
-          <motion.button 
+          <motion.button
             onClick={() => setShowManualLog(true)}
             whileTap={{ scale: 0.96 }}
             whileHover={{ scale: 1.02 }}
@@ -227,7 +227,7 @@ export default function DashboardScreen() {
           >
             <Plus className="w-6 h-6" />
           </motion.button>
-          <motion.button 
+          <motion.button
             onClick={handleShare}
             whileTap={{ scale: 0.96 }}
             whileHover={{ scale: 1.02 }}
@@ -262,7 +262,7 @@ export default function DashboardScreen() {
               </div>
               <div>
                 <h2 className="text-xl font-bold flex items-center text-white">
-                  Goal Reached! 
+                  Goal Reached!
                   <Sparkles className="w-5 h-5 ml-2 text-yellow-200 animate-pulse" />
                 </h2>
                 <p className="text-amber-50 font-medium text-sm mt-1">
@@ -276,108 +276,108 @@ export default function DashboardScreen() {
 
       {/* Manual Log Modal */}
       <AnimatePresence>
-      {showManualLog && (
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 dark:bg-black/80 backdrop-blur-sm"
-        >
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            className="bg-white dark:bg-[#1e1e1e] rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-gray-200 dark:border-zinc-800"
+        {showManualLog && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 dark:bg-black/80 backdrop-blur-sm"
           >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{editSessionId ? 'Edit Time' : 'Log Time'}</h2>
-              <motion.button 
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  setShowManualLog(false);
-                  setEditSessionId(null);
-                  setManualHours('');
-                  setManualMinutes('');
-                  setManualStudies('0');
-                  setManualDate(new Date().toISOString().substring(0, 10));
-                }} 
-                className="text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
-              >
-                <X className="w-6 h-6" />
-              </motion.button>
-            </div>
-            
-            <form onSubmit={handleManualLog} className="space-y-4">
-              <div>
-                <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Date</label>
-                <input 
-                  type="date" 
-                  value={manualDate}
-                  onChange={(e) => setManualDate(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
-                  required
-                />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className="bg-white dark:bg-[#1e1e1e] rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-gray-200 dark:border-zinc-800"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{editSessionId ? 'Edit Time' : 'Log Time'}</h2>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    setShowManualLog(false);
+                    setEditSessionId(null);
+                    setManualHours('');
+                    setManualMinutes('');
+                    setManualStudies('0');
+                    setManualDate(new Date().toISOString().substring(0, 10));
+                  }}
+                  className="text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
+                >
+                  <X className="w-6 h-6" />
+                </motion.button>
               </div>
-              
-              {showHours && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Hours</label>
-                    <input 
-                      type="number" 
-                      min="0"
-                      value={manualHours}
-                      onChange={(e) => setManualHours(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
-                      placeholder="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Minutes</label>
-                    <input 
-                      type="number" 
-                      min="0"
-                      max="59"
-                      value={manualMinutes}
-                      onChange={(e) => setManualMinutes(e.target.value)}
-                      className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
-                      placeholder="0"
-                    />
-                  </div>
+
+              <form onSubmit={handleManualLog} className="space-y-4">
+                <div>
+                  <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Date</label>
+                  <input
+                    type="date"
+                    value={manualDate}
+                    onChange={(e) => setManualDate(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
+                    required
+                  />
                 </div>
-              )}
 
-              <div>
-                <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Bible Studies</label>
-                <input 
-                  type="number" 
-                  min="0"
-                  value={manualStudies}
-                  onChange={(e) => setManualStudies(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
-                />
-              </div>
+                {showHours && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Hours</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={manualHours}
+                        onChange={(e) => setManualHours(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
+                        placeholder="0"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Minutes</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="59"
+                        value={manualMinutes}
+                        onChange={(e) => setManualMinutes(e.target.value)}
+                        className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+                )}
 
-              <motion.button 
-                type="submit" 
-                disabled={isLogging}
-                whileTap={{ scale: 0.96 }}
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                className="w-full py-4 mt-2 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
-              >
-                {isLogging ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Save Entry</span>}
-              </motion.button>
-            </form>
+                <div>
+                  <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Bible Studies</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={manualStudies}
+                    onChange={(e) => setManualStudies(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <motion.button
+                  type="submit"
+                  disabled={isLogging}
+                  whileTap={{ scale: 0.96 }}
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                  className="w-full py-4 mt-2 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
+                >
+                  {isLogging ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Save Entry</span>}
+                </motion.button>
+              </form>
+            </motion.div>
           </motion.div>
-        </motion.div>
-      )}
+        )}
       </AnimatePresence>
 
       {/* Monthly Progress */}
       {showHours && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.05 }}
@@ -392,10 +392,10 @@ export default function DashboardScreen() {
               {currentMonthlyHours} / {monthlyGoal} hrs
             </span>
           </div>
-          
+
           {/* Progress Bar */}
           <div className="h-4 w-full bg-gray-100 dark:bg-zinc-900 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-primary transition-all duration-1000 ease-out"
               style={{ width: `${monthlyPercentage}%` }}
             />
@@ -408,7 +408,7 @@ export default function DashboardScreen() {
 
       {/* Yearly Progress */}
       {showHours && showYearly && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.1 }}
@@ -423,10 +423,10 @@ export default function DashboardScreen() {
               {currentYearlyHours} / {yearlyGoal} hrs
             </span>
           </div>
-          
+
           {/* Progress Bar */}
           <div className="h-4 w-full bg-gray-100 dark:bg-zinc-900 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-primary transition-all duration-1000 ease-out"
               style={{ width: `${yearlyPercentage}%` }}
             />
@@ -436,7 +436,7 @@ export default function DashboardScreen() {
 
       {/* Analytics Chart */}
       {showHours && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.15 }}
@@ -451,7 +451,7 @@ export default function DashboardScreen() {
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <XAxis dataKey="month" stroke={theme === 'dark' ? '#a1a1aa' : '#71717a'} fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke={theme === 'dark' ? '#a1a1aa' : '#71717a'} fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip 
+                <Tooltip
                   cursor={{ fill: theme === 'dark' ? '#27272a' : '#f4f4f5' }}
                   contentStyle={{ backgroundColor: theme === 'dark' ? '#18181b' : '#ffffff', borderColor: theme === 'dark' ? '#27272a' : '#e4e4e7', borderRadius: '8px', color: theme === 'dark' ? '#ffffff' : '#000000' }}
                 />
@@ -463,7 +463,7 @@ export default function DashboardScreen() {
       )}
 
       {/* Stats Grid */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.2 }}
@@ -484,7 +484,7 @@ export default function DashboardScreen() {
       </motion.div>
 
       {/* Recent Activity */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.25 }}
@@ -500,7 +500,7 @@ export default function DashboardScreen() {
           <div className="space-y-3">
             <AnimatePresence initial={false}>
               {sessions.slice(0, 10).map(session => (
-                <motion.div 
+                <motion.div
                   key={session.id}
                   layout
                   initial={{ opacity: 0, y: 15 }}
@@ -509,33 +509,33 @@ export default function DashboardScreen() {
                   transition={{ type: "spring", stiffness: 400, damping: 20 }}
                   className="flex items-center justify-between p-4 bg-gray-100 dark:bg-zinc-900 rounded-xl border border-gray-200 dark:border-zinc-800 overflow-hidden"
                 >
-                <div>
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">
-                    {session.manualDate ? format(new Date(session.manualDate + 'T12:00:00'), 'MMM d, yyyy') : format(new Date(session.startTime), 'MMM d, yyyy')}
-                  </p>
-                  <div className="flex items-center space-x-3 text-xs text-gray-500 dark:text-zinc-400 mt-1">
-                    {showHours && (
-                      <span>{Number((session.durationMs / (1000 * 60 * 60)).toFixed(1))} hrs</span>
-                    )}
-                    <span>{session.studies} studies</span>
+                  <div>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">
+                      {session.manualDate ? format(new Date(session.manualDate + 'T12:00:00'), 'MMM d, yyyy') : format(new Date(session.startTime), 'MMM d, yyyy')}
+                    </p>
+                    <div className="flex items-center space-x-3 text-xs text-gray-500 dark:text-zinc-400 mt-1">
+                      {showHours && (
+                        <span>{Number((session.durationMs / (1000 * 60 * 60)).toFixed(1))} hrs</span>
+                      )}
+                      <span>{session.studies} studies</span>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <motion.button 
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => handleEditSession(session)} 
-                    className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary transition-colors"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                  </motion.button>
-                  <motion.button 
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => handleDeleteSession(session.id)} 
-                    className="p-2 text-gray-500 dark:text-zinc-400 hover:text-danger transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </motion.button>
-                </div>
+                  <div className="flex items-center space-x-2">
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleEditSession(session)}
+                      className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary transition-colors"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => handleDeleteSession(session.id)}
+                      className="p-2 text-gray-500 dark:text-zinc-400 hover:text-danger transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </motion.button>
+                  </div>
                 </motion.div>
               ))}
             </AnimatePresence>

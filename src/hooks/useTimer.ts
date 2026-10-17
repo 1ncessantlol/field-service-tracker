@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { db } from '../firebase';
 import { doc, setDoc, updateDoc, collection } from 'firebase/firestore';
 import { useUser } from '../context/UserContext';
@@ -106,38 +106,46 @@ export function useTimer(): UseTimerResult {
     };
   }, [status]);
 
-  const startTimer = useCallback(async () => {
-    if (!user) return;
-    
-    const now = Date.now();
-    const newSessionRef = doc(collection(db, 'sessions'));
-    const sessionId = newSessionRef.id;
-    
-    // Save to local storage for background-safe UI ticking
-    localStorage.setItem(STORAGE_KEY, sessionId);
-    localStorage.setItem(START_TIME_KEY, now.toString());
-    localStorage.setItem(STATUS_KEY, 'running');
-    localStorage.removeItem(PAUSE_TIME_KEY);
-    localStorage.removeItem(ACCUMULATED_TIME_KEY);
-    localStorage.removeItem('fst_notified');
-    setStatus('running');
-    setElapsedTimeMs(0);
+  const isStartingRef = useRef(false);
+  const isStoppingRef = useRef(false);
 
-    // Save active session to Firestore
+  const startTimer = useCallback(async () => {
+    if (!user || isStartingRef.current || localStorage.getItem(STORAGE_KEY)) return;
+    isStartingRef.current = true;
+    
     try {
-      if (!navigator.onLine) {
-        alert("Started offline! Will sync automatically when connection returns");
+      const now = Date.now();
+      const newSessionRef = doc(collection(db, 'sessions'));
+      const sessionId = newSessionRef.id;
+      
+      // Save to local storage for background-safe UI ticking
+      localStorage.setItem(STORAGE_KEY, sessionId);
+      localStorage.setItem(START_TIME_KEY, now.toString());
+      localStorage.setItem(STATUS_KEY, 'running');
+      localStorage.removeItem(PAUSE_TIME_KEY);
+      localStorage.removeItem(ACCUMULATED_TIME_KEY);
+      localStorage.removeItem('fst_notified');
+      setStatus('running');
+      setElapsedTimeMs(0);
+
+      // Save active session to Firestore
+      try {
+        if (!navigator.onLine) {
+          alert("Started offline! Will sync automatically when connection returns");
+        }
+        setDoc(doc(db, 'sessions', sessionId), {
+          uid: user.uid,
+          startTime: now,
+          status: 'active',
+          monthYear: new Date(now).toISOString().substring(0, 7) // e.g. "2026-08"
+        }).catch(err => {
+          console.error("Error starting session in Firestore:", err);
+        });
+      } catch (err) {
+        console.error("Error initiating session start:", err);
       }
-      setDoc(doc(db, 'sessions', sessionId), {
-        uid: user.uid,
-        startTime: now,
-        status: 'active',
-        monthYear: new Date(now).toISOString().substring(0, 7) // e.g. "2026-08"
-      }).catch(err => {
-        console.error("Error starting session in Firestore:", err);
-      });
-    } catch (err) {
-      console.error("Error initiating session start:", err);
+    } finally {
+      isStartingRef.current = false;
     }
   }, [user]);
 
@@ -180,62 +188,67 @@ export function useTimer(): UseTimerResult {
   }, [status]);
 
   const stopTimer = useCallback(async (studies: number) => {
-    if (!user) return;
-    
-    const sessionId = localStorage.getItem(STORAGE_KEY);
-    const storedStatus = localStorage.getItem(STATUS_KEY);
-    const storedStartTime = localStorage.getItem(START_TIME_KEY);
-    const storedPauseTime = localStorage.getItem(PAUSE_TIME_KEY);
-    
-    if (!sessionId || !storedStartTime) return;
+    if (!user || isStoppingRef.current) return;
+    isStoppingRef.current = true;
 
-    const startTime = parseInt(storedStartTime, 10);
-    const endTime = Date.now();
-    let finalDurationMs = 0;
-    let finalEndTime = endTime;
-    
-    if (storedStatus === 'paused' && storedPauseTime) {
-      finalEndTime = parseInt(storedPauseTime, 10);
-      finalDurationMs = finalEndTime - startTime;
-    } else {
-      finalDurationMs = finalEndTime - startTime;
-    }
-
-    if (finalDurationMs < 0) finalDurationMs = 0;
-
-    // Backup state locally before clearing active timer just in case
-    const sessionData = {
-      endTime: finalEndTime,
-      durationMs: finalDurationMs,
-      studies,
-      status: 'completed'
-    };
-    localStorage.setItem(`fst_backup_${sessionId}`, JSON.stringify(sessionData));
-
-    // Clear local state
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(START_TIME_KEY);
-    localStorage.removeItem(PAUSE_TIME_KEY);
-    localStorage.removeItem(ACCUMULATED_TIME_KEY);
-    localStorage.removeItem(STATUS_KEY);
-    localStorage.removeItem('fst_notified');
-    setStatus('idle');
-    setElapsedTimeMs(0);
-
-    // Save completed session to Firestore
     try {
-      if (!navigator.onLine) {
-        alert("Saved offline! Will sync automatically when connection returns");
+      const sessionId = localStorage.getItem(STORAGE_KEY);
+      const storedStatus = localStorage.getItem(STATUS_KEY);
+      const storedStartTime = localStorage.getItem(START_TIME_KEY);
+      const storedPauseTime = localStorage.getItem(PAUSE_TIME_KEY);
+      
+      if (!sessionId || !storedStartTime) return;
+
+      const startTime = parseInt(storedStartTime, 10);
+      const endTime = Date.now();
+      let finalDurationMs = 0;
+      let finalEndTime = endTime;
+      
+      if (storedStatus === 'paused' && storedPauseTime) {
+        finalEndTime = parseInt(storedPauseTime, 10);
+        finalDurationMs = finalEndTime - startTime;
+      } else {
+        finalDurationMs = finalEndTime - startTime;
       }
-      updateDoc(doc(db, 'sessions', sessionId), sessionData)
-        .then(() => {
-          localStorage.removeItem(`fst_backup_${sessionId}`);
-        })
-        .catch(err => {
-          console.error("Error stopping session in Firestore:", err);
-        });
-    } catch (err) {
-      console.error("Error initiating session save:", err);
+
+      if (finalDurationMs < 0) finalDurationMs = 0;
+
+      // Backup state locally before clearing active timer just in case
+      const sessionData = {
+        endTime: finalEndTime,
+        durationMs: finalDurationMs,
+        studies,
+        status: 'completed'
+      };
+      localStorage.setItem(`fst_backup_${sessionId}`, JSON.stringify(sessionData));
+
+      // Clear local state
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(START_TIME_KEY);
+      localStorage.removeItem(PAUSE_TIME_KEY);
+      localStorage.removeItem(ACCUMULATED_TIME_KEY);
+      localStorage.removeItem(STATUS_KEY);
+      localStorage.removeItem('fst_notified');
+      setStatus('idle');
+      setElapsedTimeMs(0);
+
+      // Save completed session to Firestore
+      try {
+        if (!navigator.onLine) {
+          alert("Saved offline! Will sync automatically when connection returns");
+        }
+        updateDoc(doc(db, 'sessions', sessionId), sessionData)
+          .then(() => {
+            localStorage.removeItem(`fst_backup_${sessionId}`);
+          })
+          .catch(err => {
+            console.error("Error stopping session in Firestore:", err);
+          });
+      } catch (err) {
+        console.error("Error initiating session save:", err);
+      }
+    } finally {
+      isStoppingRef.current = false;
     }
   }, [user]);
 
