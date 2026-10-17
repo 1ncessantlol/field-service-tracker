@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, Clock, BookOpen, Target, Plus, X, Loader2, Trash2, Edit2, List, Trophy, Sparkles, TrendingUp } from 'lucide-react';
+import { Share2, Clock, BookOpen, Target, Plus, Trash2, Edit2, List, Trophy, Sparkles, TrendingUp } from 'lucide-react';
 import { useUser, type Session } from '../context/UserContext';
+import LogPastSessionModal from '../components/LogPastSessionModal';
 import { db } from '../firebase';
-import { collection, addDoc, serverTimestamp, doc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { doc, deleteDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
@@ -34,12 +35,7 @@ export default function DashboardScreen() {
   const { theme } = useTheme();
 
   const [showManualLog, setShowManualLog] = useState(false);
-  const [manualDate, setManualDate] = useState(() => new Date().toISOString().substring(0, 10));
-  const [manualHours, setManualHours] = useState('');
-  const [manualMinutes, setManualMinutes] = useState('');
-  const [manualStudies, setManualStudies] = useState('0');
-  const [isLogging, setIsLogging] = useState(false);
-  const [editSessionId, setEditSessionId] = useState<string | null>(null);
+  const [editSession, setEditSession] = useState<Session | null>(null);
 
   // Determine goals based on role
   let monthlyGoal = 0;
@@ -137,78 +133,8 @@ export default function DashboardScreen() {
     }
   };
 
-  const handleManualLog = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user) return;
-
-    const hrs = parseInt(manualHours) || 0;
-    const mins = parseInt(manualMinutes) || 0;
-    const stds = parseInt(manualStudies) || 0;
-
-    if (hrs === 0 && mins === 0 && stds === 0) {
-      alert("Please enter at least some time or studies.");
-      return;
-    }
-
-    const durationMs = (hrs * 60 * 60 * 1000) + (mins * 60 * 1000);
-    // Use the selected date to derive monthYear and startTime
-    const monthYear = manualDate.substring(0, 7);
-    const startTime = new Date(`${manualDate}T12:00:00`).getTime();
-
-    setIsLogging(true);
-    try {
-      if (!navigator.onLine) {
-        alert("Saved offline! Will sync automatically when connection returns");
-      }
-
-      if (editSessionId) {
-        updateDoc(doc(db, 'sessions', editSessionId), {
-          durationMs,
-          studies: stds,
-          monthYear,
-          manualDate,
-          startTime,
-        }).catch(err => console.error("Error updating session:", err));
-      } else {
-        addDoc(collection(db, 'sessions'), {
-          uid: user.uid,
-          durationMs,
-          studies: stds,
-          status: 'completed',
-          monthYear,
-          manualDate,
-          startTime,
-          createdAt: serverTimestamp()
-        }).catch(err => console.error("Error adding session:", err));
-      }
-
-      setManualHours('');
-      setManualMinutes('');
-      setManualStudies('0');
-      setEditSessionId(null);
-      setShowManualLog(false);
-    } catch (err) {
-      console.error("Error logging manual time", err);
-      alert("Failed to save entry.");
-    } finally {
-      setIsLogging(false);
-    }
-  };
-
   const handleEditSession = (session: Session) => {
-    const d = new Date(session.startTime);
-    const dateStr = session.manualDate || d.toISOString().substring(0, 10);
-    setManualDate(dateStr);
-
-    const totalMins = Math.floor(session.durationMs / 60000);
-    const hrs = Math.floor(totalMins / 60);
-    const mins = totalMins % 60;
-
-    setManualHours(hrs > 0 ? hrs.toString() : '');
-    setManualMinutes(mins > 0 ? mins.toString() : '');
-    setManualStudies(session.studies > 0 ? session.studies.toString() : '0');
-
-    setEditSessionId(session.id);
+    setEditSession(session);
     setShowManualLog(true);
   };
 
@@ -250,14 +176,18 @@ export default function DashboardScreen() {
         </div>
         <div className="flex space-x-3">
           <motion.button
-            onClick={() => setShowManualLog(true)}
+            onClick={() => {
+              setEditSession(null);
+              setShowManualLog(true);
+            }}
             whileTap={{ scale: 0.96 }}
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            className="p-3 bg-white dark:bg-[#1e1e1e] rounded-full text-gray-900 dark:text-white hover:text-primary transition-colors border border-gray-200 dark:border-zinc-800 shadow-sm"
-            title="Log Manually"
+            className="flex items-center space-x-1.5 px-3.5 py-2.5 bg-white dark:bg-[#1e1e1e] rounded-full text-xs font-semibold text-gray-900 dark:text-white hover:text-primary transition-colors border border-gray-200 dark:border-zinc-800 shadow-sm"
+            title="Log Past Session"
           >
-            <Plus className="w-6 h-6" />
+            <Plus className="w-4 h-4 text-primary" />
+            <span className="hidden sm:inline">Log Past Session</span>
           </motion.button>
           <motion.button
             onClick={handleShare}
@@ -306,106 +236,15 @@ export default function DashboardScreen() {
         )}
       </AnimatePresence>
 
-      {/* Manual Log Modal */}
-      <AnimatePresence>
-        {showManualLog && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 dark:bg-black/80 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20 }}
-              className="bg-white dark:bg-[#1e1e1e] rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-gray-200 dark:border-zinc-800"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{editSessionId ? 'Edit Time' : 'Log Time'}</h2>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => {
-                    setShowManualLog(false);
-                    setEditSessionId(null);
-                    setManualHours('');
-                    setManualMinutes('');
-                    setManualStudies('0');
-                    setManualDate(new Date().toISOString().substring(0, 10));
-                  }}
-                  className="text-gray-500 dark:text-zinc-400 hover:text-gray-900 dark:hover:text-white"
-                >
-                  <X className="w-6 h-6" />
-                </motion.button>
-              </div>
-
-              <form onSubmit={handleManualLog} className="space-y-4">
-                <div>
-                  <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Date</label>
-                  <input
-                    type="date"
-                    value={manualDate}
-                    onChange={(e) => setManualDate(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
-                    required
-                  />
-                </div>
-
-                {showHours && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Hours</label>
-                      <input
-                        type="number"
-                        min="0"
-                        value={manualHours}
-                        onChange={(e) => setManualHours(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
-                        placeholder="0"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Minutes</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="59"
-                        value={manualMinutes}
-                        onChange={(e) => setManualMinutes(e.target.value)}
-                        className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
-                        placeholder="0"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <label className="text-sm text-gray-500 dark:text-zinc-400 mb-1 block">Bible Studies</label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={manualStudies}
-                    onChange={(e) => setManualStudies(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-900 border border-gray-300 dark:border-zinc-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:border-primary"
-                  />
-                </div>
-
-                <motion.button
-                  type="submit"
-                  disabled={isLogging}
-                  whileTap={{ scale: 0.96 }}
-                  whileHover={{ scale: 1.02 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                  className="w-full py-4 mt-2 bg-primary text-white dark:text-[#121212] font-bold rounded-xl hover:bg-primaryHover transition-colors disabled:opacity-50 flex items-center justify-center space-x-2"
-                >
-                  {isLogging ? <Loader2 className="w-5 h-5 animate-spin" /> : <span>Save Entry</span>}
-                </motion.button>
-              </form>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Log Past Session Modal */}
+      <LogPastSessionModal
+        isOpen={showManualLog}
+        onClose={() => {
+          setShowManualLog(false);
+          setEditSession(null);
+        }}
+        sessionToEdit={editSession}
+      />
 
       {/* Monthly Progress */}
       {showHours && (
@@ -590,6 +429,11 @@ export default function DashboardScreen() {
                       )}
                       <span>{session.studies} studies</span>
                     </div>
+                    {session.notes && (
+                      <p className="text-xs text-gray-600 dark:text-zinc-400 mt-1 italic line-clamp-1">
+                        "{session.notes}"
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center space-x-2">
                     <motion.button
