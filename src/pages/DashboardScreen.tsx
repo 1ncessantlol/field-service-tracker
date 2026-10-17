@@ -1,8 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Share2, Clock, BookOpen, Target, Plus, Trash2, Edit2, List, Trophy, Sparkles, TrendingUp } from 'lucide-react';
-import { useUser, type Session } from '../context/UserContext';
-import LogPastSessionModal from '../components/LogPastSessionModal';
+import { Share2, Clock, BookOpen, Target, Trash2, List, Trophy, Sparkles, TrendingUp } from 'lucide-react';
+import { useUser } from '../context/UserContext';
 import { db } from '../firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
 import { format } from 'date-fns';
@@ -33,9 +32,6 @@ export default function DashboardScreen() {
     sessions
   } = useUser();
   const { theme } = useTheme();
-
-  const [showManualLog, setShowManualLog] = useState(false);
-  const [editSession, setEditSession] = useState<Session | null>(null);
 
   // Determine goals based on role
   let monthlyGoal = 0;
@@ -133,11 +129,6 @@ export default function DashboardScreen() {
     }
   };
 
-  const handleEditSession = (session: Session) => {
-    setEditSession(session);
-    setShowManualLog(true);
-  };
-
   const handleDeleteSession = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this session? This will recalculate your progress.")) {
       try {
@@ -175,20 +166,6 @@ export default function DashboardScreen() {
           <p className="text-primary font-medium mt-1">{role}</p>
         </div>
         <div className="flex space-x-3">
-          <motion.button
-            onClick={() => {
-              setEditSession(null);
-              setShowManualLog(true);
-            }}
-            whileTap={{ scale: 0.96 }}
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            className="flex items-center space-x-1.5 px-3.5 py-2.5 bg-white dark:bg-[#1e1e1e] rounded-full text-xs font-semibold text-gray-900 dark:text-white hover:text-primary transition-colors border border-gray-200 dark:border-zinc-800 shadow-sm"
-            title="Log Past Session"
-          >
-            <Plus className="w-4 h-4 text-primary" />
-            <span className="hidden sm:inline">Log Past Session</span>
-          </motion.button>
           <motion.button
             onClick={handleShare}
             whileTap={{ scale: 0.96 }}
@@ -235,16 +212,6 @@ export default function DashboardScreen() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Log Past Session Modal */}
-      <LogPastSessionModal
-        isOpen={showManualLog}
-        onClose={() => {
-          setShowManualLog(false);
-          setEditSession(null);
-        }}
-        sessionToEdit={editSession}
-      />
 
       {/* Monthly Progress */}
       {showHours && (
@@ -429,24 +396,14 @@ export default function DashboardScreen() {
                       )}
                       <span>{session.studies} studies</span>
                     </div>
-                    {session.notes && (
-                      <p className="text-xs text-gray-600 dark:text-zinc-400 mt-1 italic line-clamp-1">
-                        "{session.notes}"
-                      </p>
-                    )}
                   </div>
                   <div className="flex items-center space-x-2">
                     <motion.button
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => handleEditSession(session)}
-                      className="p-2 text-gray-500 dark:text-zinc-400 hover:text-primary transition-colors"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
                       onClick={() => handleDeleteSession(session.id)}
                       className="p-2 text-gray-500 dark:text-zinc-400 hover:text-danger transition-colors"
+                      title="Delete Session"
+                      aria-label="Delete Session"
                     >
                       <Trash2 className="w-4 h-4" />
                     </motion.button>

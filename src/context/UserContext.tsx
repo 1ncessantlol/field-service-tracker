@@ -13,7 +13,6 @@ export interface Session {
   status: string;
   monthYear: string;
   manualDate?: string;
-  notes?: string;
 }
 
 interface UserContextType {

@@ -2,7 +2,6 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTimer } from '../hooks/useTimer';
 import { Play, Square, Plus, Minus, BookOpen, Pause, Loader2 } from 'lucide-react';
-import LogPastSessionModal from '../components/LogPastSessionModal';
 
 /**
  * Safe helper function for mobile haptic feedback.
@@ -28,7 +27,6 @@ export default function TimerScreen() {
   const [studies, setStudies] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
-  const [showPastSessionModal, setShowPastSessionModal] = useState(false);
 
   // Synchronous refs for immediate duplicate-tap prevention before re-render
   const isSavingRef = useRef(false);
@@ -214,20 +212,6 @@ export default function TimerScreen() {
         </AnimatePresence>
       </div>
 
-      {/* Subtle secondary action link: + Log Past Session */}
-      <motion.button
-        type="button"
-        onClick={() => setShowPastSessionModal(true)}
-        whileTap={{ scale: 0.96 }}
-        whileHover={{ scale: 1.02 }}
-        transition={{ type: "spring", stiffness: 400, damping: 20 }}
-        className="flex items-center space-x-1.5 text-xs font-semibold text-primary hover:text-primaryHover transition-colors py-2 px-4 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/20 shadow-sm -mt-6"
-        title="Log Past Session"
-      >
-        <Plus className="w-3.5 h-3.5" />
-        <span>Log Past Session</span>
-      </motion.button>
-
       <motion.div
         className="w-full max-w-sm bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800"
         initial={{ opacity: 0, scale: 0.98 }}
@@ -265,12 +249,6 @@ export default function TimerScreen() {
           </motion.button>
         </div>
       </motion.div>
-
-      {/* Isolated Log Past Session Modal */}
-      <LogPastSessionModal
-        isOpen={showPastSessionModal}
-        onClose={() => setShowPastSessionModal(false)}
-      />
     </motion.div>
   );
 }
