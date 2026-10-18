@@ -96,8 +96,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    // 2. Sessions listener for current Calendar Year (Jan 1st to Dec 31st)
+    // 2. Sessions listener — fetch from September 1st of the previous year
+    //    so that Service Year (Sep→Aug) data is always available in memory.
     const now = new Date();
+    const sessionFetchStart = new Date(now.getFullYear() - 1, 8, 1).getTime(); // Sep 1 last year
     const currentYearStart = new Date(now.getFullYear(), 0, 1).getTime();
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
@@ -118,25 +120,33 @@ export function UserProvider({ children }: { children: ReactNode }) {
         
         const duration = data.durationMs || 0;
         const studies = data.studies || 0;
-        const startTime = data.startTime || 0;
+        const sessionTime = data.manualDate
+          ? new Date(data.manualDate + 'T12:00:00').getTime()
+          : (data.startTime || 0);
 
-        // Filter out sessions that are not in the current calendar year
-        if (startTime < currentYearStart) return;
+        // Filter out sessions older than Sept 1 of last year
+        if (sessionTime < sessionFetchStart) return;
 
         allSessions.push({ id: doc.id, ...data } as Session);
 
-        // Add to yearly totals (filtered by currentYearStart above)
-        yearlyDurationMs += duration;
+        // Add to calendar-year totals
+        if (sessionTime >= currentYearStart) {
+          yearlyDurationMs += duration;
+        }
 
         // Add to monthly totals if it falls in the current month
-        if (startTime >= currentMonthStart) {
+        if (sessionTime >= currentMonthStart) {
           monthlyDurationMs += duration;
           monthlyStudiesTotal += studies;
         }
       });
       
-      // Sort sessions by startTime descending
-      allSessions.sort((a, b) => b.startTime - a.startTime);
+      // Sort sessions descending
+      allSessions.sort((a, b) => {
+        const timeA = a.manualDate ? new Date(a.manualDate + 'T12:00:00').getTime() : (a.startTime || 0);
+        const timeB = b.manualDate ? new Date(b.manualDate + 'T12:00:00').getTime() : (b.startTime || 0);
+        return timeB - timeA;
+      });
       
       setCurrentMonthlyHours(Number((monthlyDurationMs / (1000 * 60 * 60)).toFixed(1)));
       setCurrentYearlyHours(Number((yearlyDurationMs / (1000 * 60 * 60)).toFixed(1)));

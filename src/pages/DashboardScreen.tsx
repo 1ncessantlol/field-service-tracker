@@ -92,17 +92,94 @@ export default function DashboardScreen() {
     return { daysRemaining, currentMonthName, hoursRemaining, surplusHours, formattedPace };
   }, [monthlyGoal, currentMonthlyHours]);
 
-  // Chart Data Aggregation
-  const chartData = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(month => {
-    let total = 0;
+  // Year Mode Toggle State
+  type YearMode = 'service' | 'calendar';
+  const [yearMode, setYearMode] = useState<YearMode>('service');
+
+  /**
+   * Safe haptic helper (only called inside click handlers, never during render).
+   */
+  const triggerHaptic = (pattern: number | number[]) => {
+    try {
+      if (
+        typeof window !== 'undefined' &&
+        'vibrate' in navigator &&
+        typeof navigator.vibrate === 'function'
+      ) {
+        window.navigator.vibrate(pattern);
+      }
+    } catch {
+      // Fail silently
+    }
+  };
+
+  const handleYearModeSwitch = (mode: YearMode) => {
+    if (mode === yearMode) return;
+    triggerHaptic(20);
+    setYearMode(mode);
+  };
+
+  // Chart Data Aggregation — adapts to Service Year vs Calendar Year
+  const CALENDAR_MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const SERVICE_MONTHS  = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'];
+
+  const { chartData, chartTotalHours, chartYearLabel, serviceYearGoal } = useMemo(() => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonthIdx = now.getMonth(); // 0-based
+
+    let startDate: Date;
+    let endDate: Date;
+    let monthOrder: string[];
+    let chartYearLabel: string;
+
+    if (yearMode === 'service') {
+      // Service Year: Sep 1 → Aug 31 of the following year
+      // If current month is Sep (8) or later, active SY = currentYear → currentYear+1
+      // Otherwise, active SY = currentYear-1 → currentYear
+      const syStartYear = currentMonthIdx >= 8 ? currentYear : currentYear - 1;
+      startDate = new Date(syStartYear, 8, 1);       // Sep 1
+      endDate   = new Date(syStartYear + 1, 7, 31, 23, 59, 59, 999); // Aug 31
+      monthOrder = SERVICE_MONTHS;
+      chartYearLabel = `${syStartYear}/${syStartYear + 1} Service Year`;
+    } else {
+      startDate = new Date(currentYear, 0, 1);        // Jan 1
+      endDate   = new Date(currentYear, 11, 31, 23, 59, 59, 999); // Dec 31
+      monthOrder = CALENDAR_MONTHS;
+      chartYearLabel = `${currentYear} Calendar Year`;
+    }
+
+    const startMs = startDate.getTime();
+    const endMs = endDate.getTime();
+
+    // Build per-month totals
+    const monthTotals: Record<string, number> = {};
+    monthOrder.forEach(m => { monthTotals[m] = 0; });
+
     sessions?.forEach(s => {
-      const d = s.manualDate ? new Date(s.manualDate + 'T12:00:00') : new Date(s.startTime);
-      if (format(d, 'MMM') === month) {
-        total += (s.durationMs / 3600000);
+      const sessionTime = s.manualDate ? new Date(s.manualDate + 'T12:00:00').getTime() : (s.startTime || 0);
+      if (sessionTime < startMs || sessionTime > endMs) return;
+      const d = new Date(sessionTime);
+      const label = format(d, 'MMM');
+      if (label in monthTotals) {
+        monthTotals[label] += (s.durationMs / 3600000);
       }
     });
-    return { month, hours: Number(total.toFixed(1)) };
-  });
+
+    const chartData = monthOrder.map(month => ({
+      month,
+      hours: Number(monthTotals[month].toFixed(1)),
+    }));
+
+    const chartTotalHours = Number(
+      chartData.reduce((sum, d) => sum + d.hours, 0).toFixed(1)
+    );
+
+    // If Regular Pioneer (600-hr goal) and Service Year mode, show annual goal progress
+    const serviceYearGoal = (yearMode === 'service' && yearlyGoal > 0) ? yearlyGoal : 0;
+
+    return { chartData, chartTotalHours, chartYearLabel, serviceYearGoal };
+  }, [sessions, yearMode, yearlyGoal]);
 
   const handleShare = async () => {
     const monthName = format(new Date(), 'MMMM yyyy');
@@ -340,22 +417,69 @@ export default function DashboardScreen() {
           transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.15 }}
           className="bg-white dark:bg-[#1e1e1e] rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-zinc-800 space-y-4"
         >
-          <div className="flex items-center space-x-2 text-gray-900 dark:text-white mb-4">
+          {/* Header with Title */}
+          <div className="flex items-center space-x-2 text-gray-900 dark:text-white">
             <BarChartIcon className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-semibold">Hours Distribution</h2>
           </div>
+
+          {/* Segmented Pill Toggle */}
+          <div className="flex items-center bg-gray-100 dark:bg-zinc-900 rounded-full p-1 border border-gray-200 dark:border-zinc-800">
+            <button
+              type="button"
+              onClick={() => handleYearModeSwitch('service')}
+              className={`flex-1 text-xs py-2 px-3 rounded-full transition-all duration-200 ${
+                yearMode === 'service'
+                  ? 'bg-primary text-zinc-950 font-bold shadow-sm'
+                  : 'text-gray-500 dark:text-zinc-400 font-semibold hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Service Year
+            </button>
+            <button
+              type="button"
+              onClick={() => handleYearModeSwitch('calendar')}
+              className={`flex-1 text-xs py-2 px-3 rounded-full transition-all duration-200 ${
+                yearMode === 'calendar'
+                  ? 'bg-primary text-zinc-950 font-bold shadow-sm'
+                  : 'text-gray-500 dark:text-zinc-400 font-semibold hover:text-gray-900 dark:hover:text-white'
+              }`}
+            >
+              Calendar Year
+            </button>
+          </div>
+
+          {/* Active Year Label */}
+          <p className="text-[11px] font-medium text-gray-400 dark:text-zinc-500 tracking-wide uppercase text-center">
+            {chartYearLabel}
+          </p>
+
+          {/* Bar Chart */}
           <div className="w-full h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis dataKey="month" stroke={theme === 'dark' ? '#a1a1aa' : '#71717a'} fontSize={12} tickLine={false} axisLine={false} />
+                <XAxis dataKey="month" stroke={theme === 'dark' ? '#a1a1aa' : '#71717a'} fontSize={11} interval={0} tickLine={false} axisLine={false} />
                 <YAxis stroke={theme === 'dark' ? '#a1a1aa' : '#71717a'} fontSize={12} tickLine={false} axisLine={false} />
                 <Tooltip
                   cursor={{ fill: theme === 'dark' ? '#27272a' : '#f4f4f5' }}
                   contentStyle={{ backgroundColor: theme === 'dark' ? '#18181b' : '#ffffff', borderColor: theme === 'dark' ? '#27272a' : '#e4e4e7', borderRadius: '8px', color: theme === 'dark' ? '#ffffff' : '#000000' }}
+                  formatter={(value: any) => [`${value} hrs`, 'Hours']}
                 />
                 <Bar dataKey="hours" fill="#f59e0b" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* Annual Summary Badge */}
+          <div className="flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800">
+            <span className="text-xs font-semibold text-gray-600 dark:text-zinc-300">
+              Total: <strong className="text-gray-900 dark:text-white ml-0.5">{chartTotalHours} hrs</strong>
+            </span>
+            {serviceYearGoal > 0 && (
+              <span className="text-[11px] font-bold text-primary">
+                {chartTotalHours} / {serviceYearGoal} hrs ({Math.round((chartTotalHours / serviceYearGoal) * 100)}%)
+              </span>
+            )}
           </div>
         </motion.div>
       )}
